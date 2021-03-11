@@ -3983,7 +3983,7 @@ break
 				break
 				case 'addaudio':
                    if (!isOwner) return reply(mess.only.ownerB)
-                   if (!isQuotedAudio) return reply('Reply the audio is uncle)
+                   if (!isQuotedAudio) return reply('Reply the audio is uncle')
                    gsh = body.slice(10)
                    if (!gsh) return reply('What is the file name?')
                    uyw = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
