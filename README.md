@@ -18,7 +18,7 @@
 ## Clone This Project
 
 ```bash
-> git clone https://github.com/denisputraa/dnsbot
+> git clone https://github.com/xxirfanx/wav2
 ```
 
 ```bash
