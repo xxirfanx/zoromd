@@ -624,7 +624,7 @@ denz.sendMessage(from, hasil, text, {quoted: { key: { fromMe: false, participant
 ║❏ ɴᴜᴍᴀ
 ║❏ ʀᴜʟᴇs
 ║❏ ɢᴀʀᴏx
-║❏ ᴍᴀɢɪᴄ
+║❏ ɴᴀɴʙᴀɴ
 ║❏ ᴍᴇɴʏᴜᴋᴀɪᴋᴜ
 ║❏ ᴜʏɪʀ
 ╙───々
@@ -5396,7 +5396,7 @@ case 'husbu':
         const d = fs.readFileSync('./sticker/jget.webp');
         denz.sendMessage(from, d, sticker, {quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg","caption": "song : dj take away", 'jpegThumbnail': fs.readFileSync('./sticker/dnsnew.webp')}}}})
         }
-		if (budy.includes("bot")){
+		if (budy.includes("nanban")){
 		denz.updatePresence(from, Presence.composing)
 		const loli = fs.readFileSync('./mp3/hai.mp3')
         denz.sendMessage(from, loli, MessageType.audio, {quoted: mek, mimetype: 'audio/mp4', ptt:true})
