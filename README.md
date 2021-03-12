@@ -22,7 +22,7 @@
 ```
 
 ```bash
-> cd dnsbot
+> cd wav2
 > bash install.sh
 ```
 
