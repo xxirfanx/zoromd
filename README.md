@@ -15,7 +15,7 @@
 
 
 
-## Clone This Project
+## Clone This Project is
 
 ```bash
 > git clone https://github.com/xxirfanx/wav2
