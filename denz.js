@@ -4698,7 +4698,7 @@ case 'jadwaltv':
   if (isBanned) return reply(mess.only.benned)    
 				if (!isUser) return reply(mess.only.userB)
   ch = body.slice(10)
-  if (args.length < 1) return reply('Enter a channel name)
+  if (args.length < 1) return reply('Enter a channel name')
   denz.updatePresence(from, Presence.composing)
   reply(mess.wait)
   try {
