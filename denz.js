@@ -682,30 +682,30 @@ denz.sendMessage(from, hasil, text, {quoted: { key: { fromMe: false, participant
 ║❏ ${prefix}ꜱɪᴍɪʜ
 ╙───々
 ╓───「 *_ᴍᴀᴋᴇʀ ᴍᴇɴᴜ_* 」
-║❏ ${prefix}ϙᴜᴏᴛᴇᴍᴀᴋᴇʀ
-║❏ ${prefix}ᴛᴀʜᴛᴀ
-║❏ ${prefix}ʙᴜʀɴᴘᴀᴘᴇʀ
-║❏ ${prefix}8ʙɪᴛ
-║❏ ${prefix}ɢʟᴏᴡɴᴇᴏɴ
-║❏ ${prefix}ɢꜱᴜɢɢᴇꜱᴛ
-║❏ ${prefix}ᴄᴀɴᴅʟᴇᴍᴜɢ
-║❏ ${prefix}ʟᴏᴠᴇᴍꜱꜱ
-║❏ ${prefix}ᴍᴜɢғʟᴏᴡᴇʀ
-║❏ ${prefix}ɴᴀʀᴜᴛᴏʙᴀɴɴᴇʀ
-║❏ ${prefix}ᴘᴀᴘᴇʀɢʟᴀꜱꜱ
-║❏ ${prefix}ʀᴏᴍᴀɴᴄᴇ
-║❏ ${prefix}ꜱʜᴀᴅᴏᴡ
-║❏ ${prefix}ɢʟɪᴛᴄʜ
-║❏ ${prefix}ᴄᴏғғᴇ
-║❏ ${prefix}ᴄᴀɴᴅʏ
-║❏ ${prefix}ʜᴘᴏᴛᴛᴇʀ
-║❏ ${prefix}ᴡᴏᴏᴅʙʟᴏᴄᴋ
-║❏ ${prefix}ɢᴀʟᴀxᴛᴇxᴛ
-║❏ ${prefix}ɢᴀʟᴀxsᴛʏʟᴇ
-║❏ ${prefix}ʙᴘɪɴᴋ
-║❏ ${prefix}ᴘᴜᴘʏᴄᴜᴛᴇ
-║❏ ${prefix}ʜᴏʟᴏɢʀᴀᴍ
-║❏ ${prefix}ᴍᴇᴛᴀʟʟᴏɢᴏ
+║🕊️ ${prefix}ϙᴜᴏᴛᴇᴍᴀᴋᴇʀ
+║🕊️ ${prefix}ᴛᴀʜᴛᴀ
+║🕊️ ${prefix}ʙᴜʀɴᴘᴀᴘᴇʀ
+║🕊️ ${prefix}8ʙɪᴛ
+║🕊️ ${prefix}ɢʟᴏᴡɴᴇᴏɴ
+║🕊️ ${prefix}ɢꜱᴜɢɢᴇꜱᴛ
+║🕊️ ${prefix}ᴄᴀɴᴅʟᴇᴍᴜɢ
+║🕊️ ${prefix}ʟᴏᴠᴇᴍꜱꜱ
+║🕊️ ${prefix}ᴍᴜɢғʟᴏᴡᴇʀ
+║🕊️ ${prefix}ɴᴀʀᴜᴛᴏʙᴀɴɴᴇʀ
+║🕊️ ${prefix}ᴘᴀᴘᴇʀɢʟᴀꜱꜱ
+║🕊️ ${prefix}ʙʟᴜᴇɴᴇᴏɴ ʟᴜᴀ
+║🕊️ ${prefix}ꜱʜᴀᴅᴏᴡ
+║🕊️ ${prefix}ɢʟɪᴛᴄʜ
+║🕊️ ${prefix}ᴄᴏғғᴇ
+║🕊️ ${prefix}ᴍᴀᴛʀɪx ʟᴜᴀ
+║🕊️ ${prefix}ʜᴘᴏᴛᴛᴇʀ
+║🕊️ ${prefix}ᴡᴏᴏᴅʙʟᴏᴄᴋ
+║🕊️ ${prefix}ɢᴀʟᴀxᴛᴇxᴛ
+║🕊️ ${prefix}ɢᴀʟᴀxsᴛʏʟᴇ
+║🕊️ ${prefix}ʙᴘɪɴᴋ
+║🕊️ ${prefix}ᴘᴜᴘʏᴄᴜᴛᴇ
+║🕊️ ${prefix}ʜᴏʟᴏɢʀᴀᴍ
+║🕊️ ${prefix}ᴍᴇᴛᴀʟʟᴏɢᴏ
 ╙───々
 ╓───「 *_ғᴜɴ ᴍᴇɴᴜ_* 」
 ║❏ ${prefix}ɴᴜʟɪꜱ
@@ -2418,13 +2418,13 @@ gelas = await getBuffer(`https://videfikri.com/api/textmaker/paperonglass/?text=
 denz.sendMessage(from, gelas, image, {quoted: mek})
 await limitAdd(sender)
 break
-case 'romance':
-if (isBanned) return reply(mess.only.benned)    
+case 'blueneon':
+if (isBanned) return reply(mess.only.benned)
 if (!isUser) return reply(mess.only.userB)
-if (args.length < 1) return reply(`Contoh: ${prefix}romance lua`)
+if (args.length < 1) return reply(`Contoh: ${prefix}blueneon lua`)
 roce = body.slice(9)
 reply(mess.wait)
-roma = await getBuffer(`https://videfikri.com/api/textmaker/romancetext/?text=${roce}`)
+roma = await getBuffer(`https://api.zeks.xyz/api/bneon?apikey=apivinz&text=${>
 denz.sendMessage(from, roma, image, {quoted: mek})
 await limitAdd(sender)
 break
@@ -2460,13 +2460,13 @@ ppi = await getBuffer(`https://videfikri.com/api/textmaker/coffeecup/?text=${kop
 denz.sendMessage(from, ppi, image, {quoted: mek})
 await limitAdd(sender)
 break
-case 'candy':
-if (isBanned) return reply(mess.only.benned)    
+case 'matrix':
+if (isBanned) return reply(mess.only.benned)
 if (!isUser) return reply(mess.only.userB)
-if (args.length < 1) return reply(`Contoh: ${prefix}candy lua`)
+if (args.length < 1) return reply(`Contoh: ${prefix}matrix lua`)
 cndy = body.slice(7)
 reply(mess.wait)
-prmen = await getBuffer(`https://videfikri.com/api/textmaker/sweetcandy/?text=${cndy}`)
+prmen = await getBuffer(`https://api.zeks.xyz/api/matrix?apikey=apivinz&text=>
 denz.sendMessage(from, prmen, image, {quoted: mek})
 await limitAdd(sender)
 break
