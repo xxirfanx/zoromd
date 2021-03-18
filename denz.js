@@ -2466,7 +2466,7 @@ if (!isUser) return reply(mess.only.userB)
 if (args.length < 1) return reply(`Contoh: ${prefix}matrix lua`)
 cndy = body.slice(7)
 reply(mess.wait)
-prmen = await getBuffer(`https://api.zeks.xyz/api/matrix?apikey=apivinz&text==${cndy}`)
+prmen = await getBuffer(`https://api.zeks.xyz/api/matrix?apikey=apivinz&text=${cndy}`)
 denz.sendMessage(from, prmen, image, {quoted: mek})
 await limitAdd(sender)
 break
