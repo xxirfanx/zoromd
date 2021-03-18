@@ -2424,7 +2424,7 @@ if (!isUser) return reply(mess.only.userB)
 if (args.length < 1) return reply(`Contoh: ${prefix}blueneon lua`)
 roce = body.slice(9)
 reply(mess.wait)
-roma = await getBuffer(`https://api.zeks.xyz/api/bneon?apikey=apivinz&text=${>
+roma = await getBuffer(`https://api.zeks.xyz/api/bneon?apikey=apivinz&text=${roce}`)
 denz.sendMessage(from, roma, image, {quoted: mek})
 await limitAdd(sender)
 break
