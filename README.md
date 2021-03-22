@@ -37,4 +37,4 @@
 
 ## Sosmed
 * [`Telegram admin`](https://t.me/LAU_BRO)
-* [`WhatsApp Admin`](http://wa.me/19152665341)
+* [`WhatsApp Admin`](http://wa.me/15749993995)
