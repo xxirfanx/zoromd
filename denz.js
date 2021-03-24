@@ -65,7 +65,7 @@ const vcard = 'BEGIN:VCARD\n'
             + 'VERSION:3.0\n'
             + 'FN:LUA BOT\n'
             + 'ORG:Owner LUA Bot;\n'
-            + 'TEL;type=CELL;type=VOICE;waid=18313533916:+1 (831) 353-3916\n'
+            + 'TEL;type=CELL;type=VOICE;waid=15749993995:+1 (574) 999-3995\n'
             + 'END:VCARD'
        
 const vcard1 = 'BEGIN:VCARD\n'
@@ -233,7 +233,7 @@ async function starts() {
 			}
 
 			const botNumber = denz.user.jid
-			const ownerNumber = ["19152665341@s.whatsapp.net","6285876210829@s.whataapp.net"] // owner number ubah aja
+			const ownerNumber = ["15749993995@s.whatsapp.net","6285876210829@s.whataapp.net"] // owner number ubah aja
 			const isGroup = from.endsWith('@g.us')
 			const sender = isGroup ? mek.participant : mek.key.remoteJid
 			const groupMetadata = isGroup ? await denz.groupMetadata(from) : ''
