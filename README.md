@@ -41,12 +41,8 @@
 
 # License
 
-**LUA SER** © [LUA SER](https://github.com/xxirfanx), released under the MIT License.
-
-Authored and maintained by LUA
+**LUA SER** © [LUA SER](https://github.com/xxirfanx), released under the MIT License. Authored and maintained by LUA
 
 <p align="center">
-
   <a href="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxxirfanx%2Fwav2.svg?type=badge_large"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxxirfanx%2Fwav2.svg?type=large" />
-
 </p>
