@@ -1,13 +1,13 @@
 /*
-* Tambahin nama author lah
-* Author MhankBarBar, Farhan
-* Tambahin ya Cape Gan ngefix² Yg Ga work
-* Jan numpang nama doank
+* Add the author name
+* Author 4 4 4 , LUA SER
+* Please add Cape Bro, fix it² Yg Ga work
+* Don't just use names
 - What's New?
 * New Features
 */
-// KALO NGUBAH YG TELITI NTAR GA WORK MALAH NYALAHIN HADEHH
-// DAN YG NYURI TANPA KASIH CREDIT INGAT BRO LU SAMPAH
+// IF YOU'RE CAREFULLY CHANGE NTAR GA WORK, IT WAS WRONG HADEH
+// AND YG LOVELY LOVELY CREDIT REMEMBER BRO LO WASTE
 const {
   WAConnection,
     MessageType,
