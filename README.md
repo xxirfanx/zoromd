@@ -1,5 +1,5 @@
 <p align="center">
-<img src=https://i.ibb.co/6t2NNmD/dnsnew.jpg" alt="20210103-132024" border="0">
+<img src=https://i.ibb.co/HtMFLVf/20210328-021346.jpg" alt="20210103-132024" border="0">
 </p>
 <p align="center">
 <a href="https://github.com/xxirfanx">
