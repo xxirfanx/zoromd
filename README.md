@@ -1,5 +1,5 @@
 <p align="center">
-<img src=https://i.ibb.co/HtMFLVf/20210328-021346.jpg" alt="20210103-132024" border="0">
+<img src=https://f.top4top.io/p_1925rrpnw1.jpg" alt="20210103-132024" border="0">
 </p>
 <p align="center">
 <a href="https://github.com/xxirfanx">
@@ -37,7 +37,7 @@
 
 ## Sosmed
 * [`Telegram admin`](https://t.me/LAU_BRO)
-* [`WhatsApp Admin`](http://wa.me/15749993995)
+* [`WhatsApp Admin`](http://wa.me/9048417849)
 
 # License
 
