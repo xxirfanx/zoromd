@@ -37,7 +37,7 @@
 
 ## Sosmed
 * [`Telegram admin`](https://t.me/LAU_BRO)
-* [`WhatsApp Admin`](http://wa.me/9048417849)
+* [`WhatsApp Admin`](http://wa.me/919048417849)
 
 # License
 
