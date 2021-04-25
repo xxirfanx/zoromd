@@ -4772,16 +4772,24 @@ method: 'get'
                 denz.sendMessage(from, buff, video, {mimetype: 'video/mp4', filename: `${anu.format}.mp4`, quoted: mek})
                 await limitAdd(sender) 
                 break 
-                case 'play'://ʟᴜᴀ sᴇʀ ᴏғᴄ 🀄   
-				play = body.slice(6)
-				anu = await fetchJson(`https://api.zeks.xyz/api/ytplaymp3?q=${play}&apikey=apivinz`)
-				if (anu.error) return reply(anu.error)
-				infomp3 = `*sᴏɴɢ ғᴏᴜɴᴅ!!!*\nᴛɪᴛʟᴇ : ${anu.result.title}\nsᴏᴜʀᴄᴇ : ${anu.result.source}\nsɪᴢᴇ : ${anu.result.size}\n\n*ᴡᴀɪᴛ ᴀɢᴀɪɴ sᴇɴᴅᴇᴅ ᴘʟᴇᴀsᴇ ᴅᴏ ɴᴏᴛ sᴘᴀᴍ ʏᴀ ᴅᴀᴅ*`
-				buffer = await getBuffer(anu.result.thumbnail)
-				denz.sendMessage(from, buffer, image, {quoted: mek, caption: infomp3})
-				lagu = await getBuffer(anu.result.url_audio)
-				denz.sendMessage(from, lagu, audio, {mimetype: 'audio/mp4', filename: `${anu.result.title}.mp3`, quoted: mek})
-				break
+                case 'play':
+                    if (args.length < 1) return reply('ᴇɴᴛᴇʀ ᴀ sᴏɴɢ ᴛɪᴛʟᴇ') 
+					costum('[✨] ᴘʀᴏᴄᴇss ʟᴏᴀᴅɪɴɢ', text)
+                    anu = await fetchJson(`https://videfikri.com/api/ytplayv2/?query=${args[0]}`, {method: 'get'})
+                    anu1 = await getBuffer(anu.result.thumbnail)
+                    anu2 = `➻ *ᴛɪᴛʟᴇ* : ${anu.result.title}\n`
+                    anu2 += `➻ *ɪᴅ* : ${anu.result.id}\n`
+                    anu2 += `➻ *ᴛʏᴘᴇ* : ${anu.result.extension}\n`                   
+                    anu2 += `➻ *ɴᴀᴍᴇ* : ${anu.result.channel}\n`
+                    anu2 += `➻ *ᴀᴄᴛɪᴠᴇ* : ${anu.result.published_on}\n`
+                    anu2 += `➻ *ᴠɪᴇᴡs* : ${anu.result.views}\n`
+                    anu2 += `➻ *ᴅᴜʀᴀsɪ* : ${anu.result.duration}\n`
+                    anu2 += `➻ *sɪᴢᴇ* : ${anu.result.size}\n`
+                    anu2 += `➻ *ᴅᴇsᴄʀɪᴘᴛɪᴏɴ* : ${anu.result.description}\n`
+                    denz.sendMessage(from, anu1, image,{caption: anu2, quoted: mek})
+                    anu3 = await getBuffer(anu.result.url)
+                    denz.sendMessage(from, anu3, audio, {mimetype: 'audio/mp4', quoted: mek})
+                    break
                 case 'ytmp3':
   if (isBanned) return reply(mess.only.benned)    
 				if (!isUser) return reply(mess.only.userB)
