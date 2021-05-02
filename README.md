@@ -24,6 +24,8 @@
 ```bash
 > cd wav2
 > bash install.sh
+> npm start
+> Done ✅🥺🙌
 ```
 
 ### Usage
@@ -38,11 +40,3 @@
 ## Sosmed
 * [`Telegram admin`](https://t.me/LAU_BRO)
 * [`WhatsApp Admin`](http://wa.me/919048417849)
-
-# License
-
-**LUA SER** © [LUA SER](https://github.com/xxirfanx), released under the MIT License. Authored and maintained by LUA
-
-<p align="center">
-  <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fxxirfanx%2Fwav2?ref=badge_large"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxxirfanx%2Fwav2.svg?type=large" />
-</p>
