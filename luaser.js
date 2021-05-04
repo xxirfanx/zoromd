@@ -389,7 +389,7 @@ denz.sendMessage(from, hasil, text, {quoted: { key: { fromMe: false, participant
 			if (isBanned) return reply(mess.only.benned)
 			if (!isUser) return reply(mess.only.userB)
 			dmenu = `╓───「 *_𝐋𝐔𝐀 𝐁𝐎𝐓 𝐔𝐘𝐈𝐑_* 」
-║𝐻𝐴𝐼 𝐼'𝑀 𝐵𝑂𝑇  🕊️
+║𝐻𝐴𝐼 e𝐼'𝑀 𝐵𝑂𝑇  🕊️
 ╙───々
 ╓───「 *_ʙᴏᴛ ɪɴғᴏ_* 」
 ║🧧 ᴄʀᴇᴀᴛᴏʀ: 𝟒 𝟒 𝟒
