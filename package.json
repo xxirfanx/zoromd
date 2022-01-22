@@ -37,7 +37,7 @@
     "moment-timezone": "^0.5.32",
     "multistream": "^4.0.1",
     "needle": "^2.5.2",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "node-gtts": "^2.0.2",
     "node-tesseract-ocr": "^2.0.0",
     "performance-now": "^2.1.0",
