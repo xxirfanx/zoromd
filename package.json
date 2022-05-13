@@ -1,6 +1,6 @@
 {
   "name": "termux-bot-wa",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "No comment",
   "main": "index.js",
   "directories": {
@@ -49,10 +49,10 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fxc7/termux-bot-wa.git"
+    "url": "git+https://github.com/xxirfanx/termux-bot-wa.git"
   },
   "bugs": {
-    "url": "https://github.com/Fxc7/termux-bot-wa/issues"
+    "url": "https://github.com/xxirfanx/termux-bot-wa/issues"
   },
-  "homepage": "https://github.com/Fxc7/termux-bot-wa#readme"
+  "homepage": "https://github.com/xxirfanx/termux-bot-wa#readme"
 }
