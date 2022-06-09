@@ -21,8 +21,8 @@
 > git clone https://github.com/xxirfanx/wav2
 ```
 
-**Warning**
-> ERROR BOT FIXED SOON WILL YOU OK🙂
+**Check**
+ERROR BOT FIXED SOON WILL YOU OK🙂
 
 ```bash
 > cd wav2
