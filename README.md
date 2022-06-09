@@ -21,7 +21,7 @@
 > git clone https://github.com/xxirfanx/wav2
 ```
 
-> **alert#9a6700;Warning**
+**alert#9a6700;Warning**
 > ERROR BOT FIXED SOON WILL YOU OK🙂
 
 ```bash
