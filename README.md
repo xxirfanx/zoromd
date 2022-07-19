@@ -41,5 +41,5 @@ ERROR BOT FIXED SOON WILL YOU OK🙂
 * [`Fxc7 UYIR`](https://github.com/Fxc7)
 
 ## Sosmed
-* [`Telegram admin`](https://t.me/LAU_BRO)
+* [`Telegram admin`](https://t.me/luabro)
 * [`WhatsApp Admin`](http://wa.me/687718888)
