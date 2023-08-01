@@ -1,48 +1,128 @@
-console.log('Starting Bot...')
-let { spawn } = require('child_process')
-let path = require('path')
-let fs = require('fs')
-let package = require('./package.json')
-const CFonts  = require('cfonts')
-CFonts.say('LUA BOT UYIR', {
-  font: 'chrome',
-  align: 'center',
-  gradient: ['red', 'magenta']
+console.log("🐾 Starting...")
+
+import yargs from "yargs"
+import cfonts from "cfonts"
+import {
+    fileURLToPath
+} from "url"
+import {
+    join,
+    dirname
+} from "path"
+import {
+    createRequire
+} from "module"
+import {
+    createInterface
+} from "readline"
+import {
+    setupMaster,
+    fork
+} from "cluster"
+import {
+    watchFile,
+    unwatchFile
+} from "fs"
+import chalk from 'chalk'
+import figlet from 'figlet'
+
+// https://stackoverflow.com/a/50052194
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const printMessage = (message, color) => {
+    const lineLength = message.length + 6;
+    const line = '─'.repeat(lineLength);
+
+    const styledMessage = chalk[color](message);
+    const styledLine = chalk[color](line);
+
+    console.log(chalk[color](`╭${line}╮`));
+    console.log(chalk[color](`│  ${styledMessage}  │`));
+    figlet(' ', (err, data) => {
+        if (err) {
+            console.log(chalk[color](`│  ${styledMessage}  │`));
+        } else {
+            console.log(chalk[color](`│  ${data} │`));
+        }
+    });
+    console.log(chalk[color](`╰${line}╯\n`));
+};
+
+const {
+    say
+} = cfonts
+const rl = createInterface(process.stdin, process.stdout)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const require = createRequire(__dirname) // Bring in the ability to create the "require" method
+const {
+    name,
+    author
+} = require(join(__dirname, "./package.json")) // https://www.stefanjudis.com/snippets/how-to-import-json-files-in-es-modules-node-js/
+
+say("zoro bot md", {
+    font: "shade",
+    align: "center",
+    colors: ["red", "yellow"]
 })
-CFonts.say(`${package.name}`, {
-  font: 'console',
-  align: 'center',
-  gradient: ['red', 'magenta']
+say("🐾 ZORO BOT Multi-Device 🐾", {
+    font: "console",
+    align: "center",
+    colors: ["green"]
 })
+
+var isRunning = false
+/**
+ * Start a js file
+ * @param {String} file `path/to/file`
+ */
 function start(file) {
-  let args = [path.join(file), ...process.argv.slice(2)]
-  CFonts.say([process.argv[0], ...args].join(' '), {
-    font: 'console',
-    align: 'center',
-    gradient: ['red', 'magenta']
-  })
-  let p = spawn(process.argv[0], args, {
-    stdio: ['inherit', 'inherit', 'inherit', 'ipc']
-  })
-  .on('message', data => {
-    console.log('[RECEIVED]', data)
-    switch (data) {
-      case 'reset':
-        p.kill()
-        start.apply(this, arguments)
-        break
-      case 'uptime':
-        p.send(process.uptime())
-        break
-    }
-  })
-  .on('error', e => {
-    console.error(e)
-    fs.watchFile(args[0], () => {
-      start()
-      fs.unwatchFile(args[0])
+    if (isRunning) return
+    isRunning = true
+    let args = [join(__dirname, file), ...process.argv.slice(2)]
+    say([process.argv[0], ...args].join(" "), {
+        font: "console",
+        align: "center",
+        colors: ["magenta"]
     })
-  })
-  // console.log(p)
+    printMessage('🌎 LOAD SOURCE...', 'red');
+    sleep(1000)
+        .then(() => printMessage('📑 LOAD PLUGINS...', 'yellow'))
+        .then(() => sleep(1000))
+        .then(() => printMessage('✅ DONE !', 'green'));
+
+    setupMaster({
+        exec: args[0],
+        args: args.slice(1),
+    })
+    let p = fork()
+    p.on("message", data => {
+        console.log(chalk.magenta("[ ✅ RECEIVED ]", data))
+        switch (data) {
+            case "reset":
+                p.process.kill()
+                isRunning = false
+                start.apply(this, arguments)
+                break
+            case "uptime":
+                p.send(process.uptime())
+                break
+        }
+    })
+    p.on("exit", (_, code) => {
+        isRunning = false
+        console.error("[❗] Exited with code :", code)
+        if (code !== 0) return start(file)
+        watchFile(args[0], () => {
+            unwatchFile(args[0])
+            start(file)
+        })
+    })
+    let opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
+    if (!opts["test"])
+        if (!rl.listenerCount()) rl.on("line", line => {
+            p.emit("message", line.trim())
+        })
+    // console.log(p)
 }
-start('luaser.js')
+
+start("main.js")
