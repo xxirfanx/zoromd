@@ -52,7 +52,23 @@ npm install
 ```bash
 node .
 ```
+## Arguments `node . [--options] [<session name>]`
 
+### `--self`
+
+Activate self mode (Ignores other)
+
+### `--server`
+
+Used for [heroku](https://heroku.com/) or scan through website
+
+### `--autoread`
+
+If enabled, all incoming messages will be marked as read
+
+### `--test`
+
+**Development** Testing Mode
 
 
 ---------
@@ -181,6 +197,23 @@ conn.editMessage(m.chat, a.key, 'text', m)
 ```js
 m.react('🤑')
 ```
+
+- How to delete session?
+
+> You can delete folder `sessions` or run command ```rm -rf sessions```
+- How to change owner number?
+
+> You can change in `config.js`, on global.owner. make sure you use correct syntax.
+```js
+global.owner = [
+  ['919911111111', 'Name', true]
+]
+
+and
+
+global.nomorown = '919911111111'
+```
+> First argument on array is number like `919911111111`, second argument is name like `Name` (if this argument pass, if using `owner` command, this number will send as owner), third argument is developer like `true` (if this argument pass, if there have plugins error (not syntax error) the error will send to developer)
 ---------
 ### want to contribute?
 1. fork this repository
@@ -194,6 +227,6 @@ m.react('🤑')
  ```bash
  𝐀𝐮𝐭𝐡𝐨𝐫 : lua ser ofc
  𝐖𝐚 : +48 888 880 215
- 𝐛𝐚𝐬𝐞 : Narutomo and BochilGaming
+ 𝐛𝐚𝐬𝐞 : Narutomo and BochilGaming and Rlxfly
  𝐌𝐲 𝐏𝐫𝐨𝐣𝐞𝐜𝐭 : 7 may 2023
  ```
