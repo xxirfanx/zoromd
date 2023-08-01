@@ -1,58 +1,95 @@
 {
-  "name": "termux-bot-wa",
-  "version": "1.0.0",
-  "description": "No comment",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
-  },
-  "keywords": [
-    "termux",
-    "whatsapp",
-    "bot",
-    "whatsapp",
-    "bot"
-  ],
-  "author": "FarhanXCo",
-  "license": "ISC",
-  "dependencies": {
-    "@adiwajshing/baileys": "^3.5.3",
-    "async": "^3.2.0",
-    "axios": "^0.21.1",
-    "cfonts": "^2.9.1",
-    "escape-string-regexp": "^4.0.0",
-    "fake-useragent": "^1.0.1",
-    "fluent-ffmpeg": "^2.1.2",
-    "file-type": "^16.2.0",
-    "fs-extra": "^9.0.1",
-    "google-it": "^1.6.0",
-    "brainly-scraper": "^1.0.3",
-    "image-to-base64": "^2.1.1",
-    "imgbb-uploader": "^1.3.0",
-    "lolis.life": "^4.0.0",
-    "moment-timezone": "^0.5.32",
-    "multistream": "^4.0.1",
-    "needle": "^2.5.2",
-    "node-fetch": "^2.6.1",
-    "node-gtts": "^2.0.2",
-    "node-tesseract-ocr": "^2.0.0",
-    "performance-now": "^2.1.0",
-    "remove.bg": "^1.3.0",
-    "request": "^2.81.0",
-    "spinnies": "^0.5.1",
-    "tiktok-scraper": "^1.4.7"
-  },
-  "devDependencies": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/xxirfanx/termux-bot-wa.git"
-  },
-  "bugs": {
-    "url": "https://github.com/xxirfanx/termux-bot-wa/issues"
-  },
-  "homepage": "https://github.com/xxirfanx/termux-bot-wa#readme"
+    "name": "zoromd",
+    "version": "4.2.0",
+    "description": "Simple WhatsApp Bot MD With ESM Module",
+    "main": "index.js",
+    "type": "module",
+    "directories": {
+        "lib": "lib",
+        "src": "src",
+        "plugins": "plugins"
+    },
+    "scripts": {
+        "start": "node index.js",
+        "test": "node test.js",
+        "test2": "nodemon index.js"
+    },
+    "keywords": [
+        "termux-whatsapp-bot",
+        "zoromd",
+        "zoro-md",
+        "whatsapp-bot",
+        "whatsapp",
+        "wa-md",
+        "js-whatsapp",
+        "whatsapp-js",
+        "lua-Bot",
+        "whatsapp",
+        "Games-wabot",
+        "wabot-aq",
+        "multi-device",
+        "MD",
+        "baileys-md"
+    ],
+    "homepage": "https://github.com/xxirfanx/zoromd",
+    "author": {
+        "name": "LUA SER OFC"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/xxirfanx/zoromd.git"
+    },
+    "bugs": {
+        "url": "https://github.com/xxirfanx/zoromd/issues"
+    },
+    "license": "GPL-3.0-or-later",
+    "dependencies": {
+        "@adiwajshing/baileys": "npm:@whiskeysockets/baileys@*",
+        "@bochilteam/scraper": "4.0.22-alpha.0",
+        "@bochilteam/scraper-sosmed": "^1.0.5",
+        "@vitalets/google-translate-api": "^9.2.0",
+        "@xct007/frieren-scraper": "github:xct007/frieren-scraper",
+        "acrcloud": "^1.4.0",
+        "api-dylux": "^1.5.5",
+        "awesome-phonenumber": "^5.10.0",
+        "axios": "^1.4.0",
+        "booru": "^2.6.3",
+        "brainly-scraper-v2": "^2.0.9",
+        "caliph-api": "^1.0.0",
+        "cfonts": "^3.2.0",
+        "chalk": "^5.3.0",
+        "cheerio": "^1.0.0-rc.12",
+        "deepai": "^1.0.21",
+        "express": "^4.18.2",
+        "figlet": "^1.6.0",
+        "file-type": "^18.5.0",
+        "fluent-ffmpeg": "^2.1.2",
+        "formdata-node": "^5.0.1",
+        "genius-lyrics": "^4.4.3",
+        "human-readable": "^0.2.1",
+        "javascript-obfuscator": "^4.0.2",
+        "jimp": "^0.16.1",
+        "jsdom": "^22.1.0",
+        "lodash": "^4.17.21",
+        "lowdb": "^5.0.5",
+        "mime-types": "^2.1.35",
+        "moment-timezone": "^0.5.43",
+        "mongoose": "^7.4.1",
+        "node-fetch": "^3.3.1",
+        "node-os-utils": "^1.3.7",
+        "node-webpmux": "^3.1.7",
+        "obfuscator": "^0.5.4",
+        "ocr-space-api-wrapper": "^2.3.0",
+        "puppeteer": "^20.9.0",
+        "qrcode": "^1.5.3",
+        "qrcode-terminal": "*",
+        "readline": "^1.3.0",
+        "sagiri": "^3.4.0",
+        "similarity": "^1.2.1",
+        "socket.io": "^4.7.1",
+        "syntax-error": "^1.4.0",
+        "url-regex-safe": "^3.0.0",
+        "wa-sticker-formatter": "^4.4.4",
+        "yargs": "^17.7.2"
+    }
 }
