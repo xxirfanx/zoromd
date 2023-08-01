@@ -17,11 +17,10 @@ let buttonMessage = {
 'title': 'Searching Source Code?',
 'body': me,
 'thumbnail': thumb2,
-'sourceUrl': 'https://www.youtube.com/watch?v=qBJ0F9Ecax0'}},
-'caption': 'http://github.com/xxirfanx\nfollow 60 will you sc ok',
+'sourceUrl': 'https://youtu.be/F5WxZTMFbk0'}},
+'caption': 'http://github.com/xxirfanx/zoromd\nOpen Source for free\n𝑺𝒊𝒎𝒑𝒍𝒆 𝑾𝒉𝒂𝒕𝒔𝒂𝒑𝒑 𝑩𝒐𝒕 𝑴𝒖𝒍𝒕𝒊-𝒅𝒆𝒗𝒊𝒄𝒆 𝑫𝒐𝒏\'𝒕 𝒇𝒐𝒓𝒈𝒐𝒕 𝒕𝒐 𝒈𝒊𝒗𝒆 𝒔𝒕𝒂𝒓 𝒊𝒇 𝒂𝒏 𝒇𝒖𝒏𝒄𝒕𝒊𝒐𝒏 𝒐𝒇 𝒂𝒏 𝒇𝒊𝒍𝒆. 𝑻𝒉𝒂𝒏𝒌𝒔',
 'footer': me, }
     await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
-
 }
 
 handler.help = ['sc <bot sc>']
