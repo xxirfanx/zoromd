@@ -30,6 +30,29 @@
 node . --server
 ```
 
+---------
+
+## FOR WINDOWS/VPS/RDP USER
+
+* Download And Install Git [`Click Here`](https://git-scm.com/downloads)
+* Download And Install NodeJS [`Click Here`](https://nodejs.org/en/download)
+* Download And Install FFmpeg [`Click Here`](https://ffmpeg.org/download.html) (**Don't Forget Add FFmpeg to PATH enviroment variables**)
+* Download And Install ImageMagick [`Click Here`](https://imagemagick.org/script/download.php)
+
+```bash
+git clone https://github.com/xxirfanx/zoromd
+cd zoromd
+npm install
+```
+
+---------
+
+## Run
+
+```bash
+node .
+```
+
 
 
 ---------
