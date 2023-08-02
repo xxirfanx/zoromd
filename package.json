@@ -45,7 +45,7 @@
     "license": "GPL-3.0-or-later",
     "dependencies": {
         "@adiwajshing/baileys": "npm:@whiskeysockets/baileys@*",
-        "@bochilteam/scraper": "4.0.22-alpha.0",
+        "@bochilteam/scraper": "4.2.4",
         "@bochilteam/scraper-sosmed": "^1.0.5",
         "@vitalets/google-translate-api": "^9.2.0",
         "@xct007/frieren-scraper": "github:xct007/frieren-scraper",
