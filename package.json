@@ -68,7 +68,7 @@
         "genius-lyrics": "^4.4.3",
         "human-readable": "^0.2.1",
         "javascript-obfuscator": "^4.0.2",
-        "jimp": "^0.16.1",
+        "jimp": "^0.22.10",
         "jsdom": "^22.1.0",
         "lodash": "^4.17.21",
         "lowdb": "^5.0.5",
