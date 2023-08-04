@@ -11,7 +11,13 @@
   
 
 ---------
+## NOTE: THIS BOT IS [ESM](https://nodejs.org/api/esm.html) BOT
+> I opened discussiond for asking any problem or new feature, if i agree with that i will invite you in my repo/pull request your idea in this source code :)
+---------
 # Installation
+
+### Deploy to Replit
+[![Run on Repl.it](https://repl.it/badge/github/xxirfanx/zoromd)](https://repl.it/github/xxirfanx/zoromd)
 
 ### RUN ON REPLIT
 1. Visit the web [this](https://replit.com)
@@ -226,7 +232,7 @@ global.nomorown = '919911111111'
   
  ```bash
  𝐀𝐮𝐭𝐡𝐨𝐫 : lua ser ofc
- 𝐖𝐚 : +48 888 880 215
+ 𝐖𝐚 : +91 6235 050 956
  𝐛𝐚𝐬𝐞 : Narutomo and BochilGaming and Rlxfly
  𝐌𝐲 𝐏𝐫𝐨𝐣𝐞𝐜𝐭 : 7 may 2023
  ```
