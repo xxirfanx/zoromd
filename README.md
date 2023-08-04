@@ -19,6 +19,8 @@
 ### Deploy to Replit
 [![Run on Repl.it](https://repl.it/badge/github/xxirfanx/zoromd)](https://repl.it/github/xxirfanx/zoromd)
 
+Language Search/Type `nix Bash` Don't nodejs
+
 ### RUN ON REPLIT
 1. Visit the web [this](https://replit.com)
 2. Login or register
