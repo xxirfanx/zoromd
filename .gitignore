@@ -1,0 +1,12 @@
+# Dependency directories
+.git/
+node_modules/
+
+# data-single-auth
+session.data.json
+database.json
+package-lock.json
+
+#data-multi-auth
+data.store.json
+sessions/
