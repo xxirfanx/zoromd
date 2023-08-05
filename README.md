@@ -19,7 +19,7 @@
 ### Deploy to Replit
 [![Run on Repl.it](https://repl.it/badge/github/xxirfanx/zoromd)](https://repl.it/github/xxirfanx/zoromd)
 
-Language Search/Type `nodejs`
+Language Search/Type `nix Bash` Don't nodejs
 
 ### RUN ON REPLIT
 1. Visit the web [this](https://replit.com)
@@ -27,7 +27,7 @@ Language Search/Type `nodejs`
 3. Press Create Repl
 4. Press `import for github`
 5. Search for this Repo or type in `xxirfanx/zoromd`
-6. Language Search/Type `nodejs`
+6. Language Search/Type `nix Bash` Don't nodejs
 7. Press `Import from Github`
 8. Edit `config.js` replace the owner number with another number or edit
 9. Swipe Right from the post `Shell` then click
