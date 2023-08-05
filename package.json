@@ -86,7 +86,6 @@
         "sagiri": "^3.4.0",
         "similarity": "^1.2.1",
         "syntax-error": "^1.4.0",
-        "terminal-image": "^2.0.0",
         "url-regex-safe": "^3.0.0",
         "wa-sticker-formatter": "^4.4.4",
         "yargs": "^17.7.2"
