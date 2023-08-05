@@ -1,3 +1,4 @@
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 import './config.js'
 
 import path, { join } from 'path'
@@ -126,6 +127,7 @@ global.conn = makeWASocket(connectionOptions)
 conn.isInit = false
 
 if (!opts['test']) {
+  (await import('./server.js')).default(PORT)
   setInterval(async () => {
     if (global.db.data) await global.db.write().catch(console.error)
    // if (opts['autocleartmp']) try {
