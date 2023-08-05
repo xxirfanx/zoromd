@@ -1,6 +1,7 @@
 # Dependency directories
 .git/
 node_modules/
+tmp/*
 
 # data-single-auth
 session.data.json
