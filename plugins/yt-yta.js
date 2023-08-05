@@ -1,6 +1,5 @@
 import fetch from 'node-fetch'
 import { youtubedl } from '@bochilteam/scraper-sosmed'
-import { somematch } from '../lib/others.js'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
 	if (!args[0]) throw `Example: ${usedPrefix + command} https://youtu.be/S1--lhvwLsc`
@@ -46,3 +45,7 @@ handler.tags = ['downloader']
 handler.command = /^(yt(a(udio)?|mp3))$/i
 
 export default handler
+
+const somematch = ( data, id ) => {
+	let res = data.find(el => el === id )
+	return res ? true : false};

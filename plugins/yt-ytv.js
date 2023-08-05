@@ -1,6 +1,5 @@
 import fetch from 'node-fetch'
 import { youtubedl } from '@bochilteam/scraper-sosmed'
-import { somematch } from '../lib/others.js'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
 	if (!(args[0] || '').match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))) return m.reply(`Invalid Youtube URL.`)
@@ -73,3 +72,7 @@ handler.tags = ['downloader']
 handler.command = /^(yt(v(ideo)?|mp4))$/i
 
 export default handler
+
+const somematch = ( data, id ) => {
+	let res = data.find(el => el === id )
+	return res ? true : false};
