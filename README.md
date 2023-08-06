@@ -206,6 +206,17 @@ conn.editMessage(m.chat, a.key, 'text', m)
 m.react('🤑')
 ```
 
+---------
+
+### 📮 S&K
+1. Not For Sale
+2. Don't forget give star this repo
+3. Follow Github
+4. Don't use this repository wrong!
+5. If you have problem chat me in owner number
+
+---------
+
 - How to delete session?
 
 > You can delete folder `sessions` or run command ```rm -rf sessions```
