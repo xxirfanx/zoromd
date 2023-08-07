@@ -1,128 +1,152 @@
-console.log("🐾 Starting...")
+import os from 'os';
+import express from 'express';
+import { spawn } from 'child_process';
+import path from 'path';
+import { join, dirname } from 'path';
+import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import chalk from 'chalk';
+import { fileURLToPath } from 'url';
 
-import yargs from "yargs"
-import cfonts from "cfonts"
-import {
-    fileURLToPath
-} from "url"
-import {
-    join,
-    dirname
-} from "path"
-import {
-    createRequire
-} from "module"
-import {
-    createInterface
-} from "readline"
-import {
-    setupMaster,
-    fork
-} from "cluster"
-import {
-    watchFile,
-    unwatchFile
-} from "fs"
-import chalk from 'chalk'
-import figlet from 'figlet'
-
-// https://stackoverflow.com/a/50052194
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const printMessage = (message, color) => {
-    const lineLength = message.length + 6;
-    const line = '─'.repeat(lineLength);
-
-    const styledMessage = chalk[color](message);
-    const styledLine = chalk[color](line);
-
-    console.log(chalk[color](`╭${line}╮`));
-    console.log(chalk[color](`│  ${styledMessage}  │`));
-    figlet(' ', (err, data) => {
-        if (err) {
-            console.log(chalk[color](`│  ${styledMessage}  │`));
-        } else {
-            console.log(chalk[color](`│  ${data} │`));
-        }
-    });
-    console.log(chalk[color](`╰${line}╯\n`));
-};
-
-const {
-    say
-} = cfonts
-const rl = createInterface(process.stdin, process.stdout)
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const require = createRequire(__dirname) // Bring in the ability to create the "require" method
-const {
-    name,
-    author
-} = require(join(__dirname, "./package.json")) // https://www.stefanjudis.com/snippets/how-to-import-json-files-in-es-modules-node-js/
 
-say("zoro bot md", {
-    font: "shade",
-    align: "center",
-    colors: ["red", "yellow"]
-})
-say("🐾 ZORO BOT Multi-Device 🐾", {
-    font: "console",
-    align: "center",
-    colors: ["green"]
-})
+const app = express();
+const port = process.env.PORT || 8080;
 
-var isRunning = false
-/**
- * Start a js file
- * @param {String} file `path/to/file`
- */
-function start(file) {
-    if (isRunning) return
-    isRunning = true
-    let args = [join(__dirname, file), ...process.argv.slice(2)]
-    say([process.argv[0], ...args].join(" "), {
-        font: "console",
-        align: "center",
-        colors: ["magenta"]
-    })
-    printMessage('🌎 LOAD SOURCE...', 'red');
-    sleep(1000)
-        .then(() => printMessage('📑 LOAD PLUGINS...', 'yellow'))
-        .then(() => sleep(1000))
-        .then(() => printMessage('✅ DONE !', 'green'));
+app.get('/', (req, res) => {
+ res.sendFile(__dirname + '/index.html');
+});
 
-    setupMaster({
-        exec: args[0],
-        args: args.slice(1),
-    })
-    let p = fork()
-    p.on("message", data => {
-        console.log(chalk.magenta("[ ✅ RECEIVED ]", data))
-        switch (data) {
-            case "reset":
-                p.process.kill()
-                isRunning = false
-                start.apply(this, arguments)
-                break
-            case "uptime":
-                p.send(process.uptime())
-                break
-        }
-    })
-    p.on("exit", (_, code) => {
-        isRunning = false
-        console.error("[❗] Exited with code :", code)
-        if (code !== 0) return start(file)
-        watchFile(args[0], () => {
-            unwatchFile(args[0])
-            start(file)
-        })
-    })
-    let opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
-    if (!opts["test"])
-        if (!rl.listenerCount()) rl.on("line", line => {
-            p.emit("message", line.trim())
-        })
-    // console.log(p)
+app.listen(port, () => {
+  console.log(chalk.green(`🌐 Port ${port} is open`));
+});
+
+let isRunning = false;
+
+async function start(file) {
+  if (isRunning) return;
+  isRunning = true;
+
+  const currentFilePath = new URL(import.meta.url).pathname;
+  const args = [path.join(path.dirname(currentFilePath), file), ...process.argv.slice(2)];
+  const p = spawn(process.argv[0], args, {
+    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+  });
+
+  p.on('message', (data) => {
+    console.log(chalk.cyan(`🟢 RECEIVED ${data}`));
+    switch (data) {
+      case 'reset':
+        p.kill();
+        isRunning = false;
+        start.apply(this, arguments);
+        break;
+      case 'uptime':
+        p.send(process.uptime());
+        break;
+    }
+  });
+
+  p.on('exit', (code) => {
+    isRunning = false;
+    console.error(chalk.red(`🛑 Exited with code: ${code}`));
+
+    if (code === 0) return;
+
+    fs.watchFile(args[0], () => {
+      fs.unwatchFile(args[0]);
+      start('main.js');
+    });
+  });
+
+  p.on('error', (err) => {
+    console.error(chalk.red(`❌ Error: ${err}`));
+    p.kill();
+    isRunning = false;
+    start('main.js');
+  });
+
+  const pluginsFolder = path.join(path.dirname(currentFilePath), 'plugins');
+
+  fs.readdir(pluginsFolder, async (err, files) => {
+    if (err) {
+      console.error(chalk.red(`❌ Error reading plugins folder: ${err}`));
+      return;
+    }
+    console.log(chalk.yellow(`🟡 Found ${files.length} plugins in folder ${pluginsFolder}`));
+
+    try {
+      const { default: baileys } = await import('@adiwajshing/baileys');
+      const version = (await baileys.fetchLatestBaileysVersion()).version;
+      console.log(chalk.yellow(`🟡 Baileys library version ${version} is installed`));
+    } catch (e) {
+      console.error(chalk.red('❌ Baileys library is not installed'));
+    }
+  });
+
+  console.log(chalk.yellow(`🖥️ ${os.type()}, ${os.release()} - ${os.arch()}`));
+  const ramInGB = os.totalmem() / (1024 * 1024 * 1024);
+  console.log(chalk.yellow(`💾 Total RAM: ${ramInGB.toFixed(2)} GB`));
+  const freeRamInGB = os.freemem() / (1024 * 1024 * 1024);
+  console.log(chalk.yellow(`💽 Free RAM: ${freeRamInGB.toFixed(2)} GB`));
+  console.log(chalk.yellow(`📃 Script by lua ser ofc`));
+
+  const packageJsonPath = path.join(path.dirname(currentFilePath), './package.json');
+  try {
+    const packageJsonData = await fsPromises.readFile(packageJsonPath, 'utf-8');
+    const packageJsonObj = JSON.parse(packageJsonData);
+    console.log(chalk.blue.bold(`\n📦 Package Information`));
+    console.log(chalk.cyan(`Name: ${packageJsonObj.name}`));
+    console.log(chalk.cyan(`Version: ${packageJsonObj.version}`));
+    console.log(chalk.cyan(`Description: ${packageJsonObj.description}`));
+    console.log(chalk.cyan(`Author: ${packageJsonObj.author.name}`));
+  } catch (err) {
+    console.error(chalk.red(`❌ Unable to read package.json: ${err}`));
+  }
+
+  const totalFoldersAndFiles = await getTotalFoldersAndFiles(pluginsFolder);
+  console.log(chalk.blue.bold(`\n📂 Total Folders and Files in "plugins" folder`));
+  console.log(chalk.cyan(`Total Folders: ${totalFoldersAndFiles.folders}`));
+  console.log(chalk.cyan(`Total Files: ${totalFoldersAndFiles.files}`));
+
+  console.log(chalk.blue.bold(`\n⏰ Current Time`));
+  const currentTime = new Date().toLocaleString();
+  console.log(chalk.cyan(`${currentTime}`));
+
+  setInterval(() => {}, 1000);
 }
 
-start("main.js")
+function getTotalFoldersAndFiles(folderPath) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(folderPath, (err, files) => {
+      if (err) {
+        reject(err);
+      } else {
+        let folders = 0;
+        let filesCount = 0;
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          if (fs.statSync(filePath).isDirectory()) {
+            folders++;
+          } else {
+            filesCount++;
+          }
+        });
+        resolve({ folders, files: filesCount });
+      }
+    });
+  });
+}
+
+start('main.js');
+
+process.on('unhandledRejection', () => {
+  console.error(chalk.red(`❌ Unhandled promise rejection. Script will restart...`));
+  start('main.js');
+});
+
+process.on('exit', (code) => {
+  console.error(chalk.red(`🛑 Exited with code: ${code}`));
+  console.error(chalk.red(`❌ Script will restart...`));
+  start('main.js');
+});
