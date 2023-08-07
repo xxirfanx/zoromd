@@ -5,7 +5,7 @@
     "whatsapp bot",
     "nodejs"
   ],
-  "repository": "https://github.com/xxirfanx/zoromd"
+  "repository": "https://github.com/xxirfanx/zoromd",
     "buildpacks": [
     {
       "url": "heroku/nodejs"
