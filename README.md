@@ -29,6 +29,8 @@
 
 Language Search/Type `nix Bash` Don't nodejs
 
+add forget [uptimerobot click](https://uptimerobot.com)
+
 ### RUN ON REPLIT
 1. Visit the web [this](https://replit.com)
 2. Login or register
@@ -42,6 +44,7 @@ Language Search/Type `nix Bash` Don't nodejs
 10. type `npm install` to install modules
 11. Wait until the module install process is complete
 12. Run the Bot by typing this
+13. add forget [uptimerobot click](https://uptimerobot.com)
 ```bash
 node . --server
 ```
