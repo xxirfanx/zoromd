@@ -126,14 +126,18 @@ global.conn = makeWASocket(connectionOptions)
 conn.isInit = false
 
 if (!opts['test']) {
-  (await import('./server.js')).default(PORT)
-  setInterval(async () => {
-    if (global.db.data) await global.db.write().catch(console.error)
-   // if (opts['autocleartmp']) try {
-      clearTmp()
-  //  } catch (e) { console.error(e) }
-  }, 60 * 1000)
+    setInterval(async () => {
+        if (global.db.data) await global.db.write().catch(console.error)
+        if (opts['autocleartmp']) try {
+            clearTmp()
+
+        } catch (e) {
+            console.error(e)
+        }
+    }, 3600000)
+    // Tiap 1 jam
 }
+if (opts['server'])(await import('./server.js')).default(global.conn, PORT)
 
 function clearTmp() {
   const tmp = [tmpdir(), join(__dirname, './tmp')]
