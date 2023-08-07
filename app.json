@@ -1,0 +1,23 @@
+{
+  "name": "wa bot md by zoro md",
+  "description": "Whatsapp bot. recode by lua ser ofc",
+  "keywords": [
+    "whatsapp bot",
+    "nodejs"
+  ],
+  "repository": "https://github.com/xxirfanx/zoromd"
+    "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "https://github.com/DuckyTeam/heroku-buildpack-imagemagick.git"
+    },
+    {
+      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+    },
+    {
+      "url": "https://github.com/clhuang/heroku-buildpack-webp-binaries.git"
+    }
+  ]
+}
