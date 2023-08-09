@@ -1,4 +1,4 @@
 run = "clear && node ."
 
 [nix]
-channel = "stable-21_11"
+channel = "unstable"
