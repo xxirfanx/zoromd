@@ -1,6 +1,6 @@
 {
     "name": "zoromd",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "description": "Simple WhatsApp Bot MD With ESM Module",
     "main": "index.js",
     "type": "module",
@@ -70,6 +70,7 @@
         "javascript-obfuscator": "^4.0.2",
         "jimp": "^0.16.1",
         "jsdom": "^22.1.0",
+        "link-preview-js": "^3.0.4",
         "lodash": "^4.17.21",
         "lowdb": "^5.0.5",
         "mime-types": "^2.1.35",
@@ -87,6 +88,7 @@
         "similarity": "^1.2.1",
         "socket.io": "^4.7.2",
         "syntax-error": "^1.4.0",
+        "terminal-image": "^2.0.0",
         "url-regex-safe": "^3.0.0",
         "wa-sticker-formatter": "^4.4.4",
         "xmldom": "^0.6.0",
