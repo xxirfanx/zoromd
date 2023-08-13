@@ -1,9 +1,12 @@
 import os from 'os';
+import cfonts from "cfonts";
+import yargs from "yargs";
 import express from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { join, dirname } from 'path';
 import fs from 'fs';
+import { createInterface } from "readline";
 import { promises as fsPromises } from 'fs';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';
@@ -23,8 +26,14 @@ app.listen(port, () => {
 
 let isRunning = false;
 
+const {
+    say
+} = cfonts;
+
+const rl = createInterface(process.stdin, process.stdout)
+
 async function start(file) {
-  if (isRunning) return;
+    if (isRunning) return;
   isRunning = true;
 
   const currentFilePath = new URL(import.meta.url).pathname;
@@ -32,39 +41,34 @@ async function start(file) {
   const p = spawn(process.argv[0], args, {
     stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
   });
-
-  p.on('message', (data) => {
-    console.log(chalk.cyan(`🟢 RECEIVED ${data}`));
-    switch (data) {
-      case 'reset':
-        p.kill();
-        isRunning = false;
-        start.apply(this, arguments);
-        break;
-      case 'uptime':
-        p.send(process.uptime());
-        break;
-    }
-  });
-
-  p.on('exit', (code) => {
-    isRunning = false;
-    console.error(chalk.red(`🛑 Exited with code: ${code}`));
-
-    if (code === 0) return;
-
-    fs.watchFile(args[0], () => {
-      fs.unwatchFile(args[0]);
-      start('main.js');
-    });
-  });
-
-  p.on('error', (err) => {
-    console.error(chalk.red(`❌ Error: ${err}`));
-    p.kill();
-    isRunning = false;
-    start('main.js');
-  });
+    p.on("message", data => {
+        console.log(chalk.magenta("[ ✅ RECEIVED ]", data))
+        switch (data) {
+            case "reset":
+                p.process.kill()
+                isRunning = false
+                start.apply(this, arguments)
+                break
+            case "uptime":
+                p.send(process.uptime())
+                break
+        }
+    })
+    p.on("exit", (_, code) => {
+        isRunning = false
+        console.error("[❗] Exited with code :", code)
+        if (code !== 0) return start(file)
+        watchFile(args[0], () => {
+            unwatchFile(args[0])
+            start(file)
+        })
+    })
+    let opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
+    if (!opts["test"])
+        if (!rl.listenerCount()) rl.on("line", line => {
+            p.emit("message", line.trim())
+        })
+    // console.log(p)
 
   const pluginsFolder = path.join(path.dirname(currentFilePath), 'plugins');
 
@@ -139,14 +143,3 @@ function getTotalFoldersAndFiles(folderPath) {
 }
 
 start('main.js');
-
-process.on('unhandledRejection', () => {
-  console.error(chalk.red(`❌ Unhandled promise rejection. Script will restart...`));
-  start('main.js');
-});
-
-process.on('exit', (code) => {
-  console.error(chalk.red(`🛑 Exited with code: ${code}`));
-  console.error(chalk.red(`❌ Script will restart...`));
-  start('main.js');
-});
