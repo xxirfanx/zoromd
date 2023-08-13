@@ -119,7 +119,7 @@ const connectionOptions = {
 
                 return message;
             }, 
-      // logger: pino({ level: 'silent' })
+       defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
 }
 
 global.conn = makeWASocket(connectionOptions)
