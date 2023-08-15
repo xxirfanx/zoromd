@@ -119,7 +119,7 @@ const connectionOptions = {
 
                 return message;
             }, 
-       defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+     defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
 }
 
 global.conn = makeWASocket(connectionOptions)
@@ -134,8 +134,8 @@ if (!opts['test']) {
         } catch (e) {
             console.error(e)
         }
-    }, 3600000)
-    // Tiap 1 jam
+    }, 30 * 1000)
+
 }
 if (opts['server'])(await import('./server.js')).default(global.conn, PORT)
 
@@ -145,7 +145,7 @@ function clearTmp() {
   tmp.forEach(dirname => readdirSync(dirname).forEach(file => filename.push(join(dirname, file))))
   return filename.map(file => {
     const stats = statSync(file)
-    if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) return unlinkSync(file) // 3 minutes
+    if (stats.isFile() && (Date.now() - stats.mtimeMs >= 5 * 60 * 1000)) return unlinkSync(file);
     return false
   })
 }
