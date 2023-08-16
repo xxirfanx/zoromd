@@ -90,7 +90,7 @@
         "socket.io": "^4.7.2",
         "syntax-error": "^1.4.0",
         "terminal-image": "^2.0.0",
-        "url-regex-safe": "^3.0.0",
+        "url-regex-safe": "^4.0.0",
         "wa-sticker-formatter": "^4.4.4",
         "xmldom": "^0.6.0",
         "yargs": "^17.7.2"
