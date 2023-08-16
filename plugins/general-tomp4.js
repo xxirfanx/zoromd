@@ -1,13 +1,13 @@
 import { webp2mp4 } from '../lib/webp2mp4.js'
 
 let handler = async (m, { conn, usedPrefix, command }) => {
-	if (!m.quoted) throw `Reply sticker / ptv with command *${usedPrefix + command}*`
-	const q = m.quoted || m
-	let mime = q.mediaType || ''
-	if (!/sticker|ptv/.test(mime)) throw `Reply sticker / ptv with command *${usedPrefix + command}*`
-	let media = await q.download()
-	let out = /ptv/.test(mime) ? media : await webp2mp4(media).catch(_ => null) || Buffer.alloc(0)
-	await conn.sendFile(m.chat, out, 'out.mp4', '*DONE*', m)
+	let q = m.quoted ? m.quoted : m
+	let mime = (q.msg || q).mimetype || q.mediaType || ''
+	if (/sticker/.test(mime) || /ptv/.test(q.mtype) || q.isAnimated) {
+	let out = await q.download()
+	if (/sticker/.test(mime)) out = await webp2mp4(out).catch(_ => null) || Buffer.alloc(0)
+	await conn.sendFile(m.chat, out, '', '*DONE*', m)
+	} else throw `Reply sticker / ptv with command *${usedPrefix + command}*`
 }
 
 handler.help = ['ptvtovideo','tomp4']
