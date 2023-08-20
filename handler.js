@@ -1,9 +1,14 @@
-import chalk from 'chalk'
-import { format } from 'util'
-import path, { join } from 'path'
-import { fileURLToPath } from 'url'
-import { smsg } from './lib/simple.js'
-import { unwatchFile, watchFile } from 'fs'
+import chalk from 'chalk';
+import { format } from 'util';
+import path, { join } from 'path';
+import { fileURLToPath } from 'url';
+import { smsg } from './lib/simple.js';
+import fetch from 'node-fetch';
+import { unwatchFile, watchFile } from 'fs';
+
+import {
+    WelcomeLeave
+} from "./lib/welcome.js";
 
 const { proto } = (await import('@adiwajshing/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -366,75 +371,64 @@ export async function participantsUpdate({
     participants,
     action
 }) {
-    if (opts["self"])
-        return
-    // if (id in this.chats) return // First login will spam
-    if (this.isInit)
-        return
-    if (global.db.data == null)
-        await loadDatabase()
-    let chat = global.db.data.chats[id] || {}
-    let text = ""
+    if (opts["self"] || this.isInit) return;
+    if (global.db.data == null) await loadDatabase();
+    const chat = global.db.data.chats[id] || {};
     const emoji = {
         promote: '👤👑',
         demote: '👤🙅‍♂️',
-    }
+        welcome: '👋',
+        bye: '👋',
+        bug: '🐛',
+        mail: '📮',
+        owner: '👑'
+    };
+
+    let res = await fetch("https://dummyjson.com/quotes/random");
+    let res1 = await res.json();
+
     switch (action) {
         case "add":
         case "remove":
             if (chat.welcome) {
-                let groupMetadata = await this.groupMetadata(id) || (this.chats[id] || {}).metadata
+                const groupMetadata = await this.groupMetadata(id) || (this.chats[id] || {}).metadata;
                 for (let user of participants) {
-                    let pp
-                    let ppgc
-                    try {
-                        pp = await this.profilePictureUrl(user, "image")
-                        ppgc = await this.profilePictureUrl(id, "image")
-                    } catch {
-                        pp = hwaifu.getRandom()
-                        ppgc = hwaifu.getRandom()
-                    } finally {
-                        text = (action === "add" ? (chat.sWelcome || this.welcome || conn.welcome || "👋 Welcome, @user!").replace("@subject", await this.getName(id)).replace("@desc", groupMetadata.desc?.toString() || "unknow") :
-                            (chat.sBye || this.bye || conn.bye || "👋 Bye, @user!")).replace("@user", await this.getName(user))
+                    const isAddAction = action === "add";
+                    const welcomeText = isAddAction ? (chat.sWelcome || this.welcome || conn.welcome || `${emoji.welcome} Selamat datang, @user!`).replace("@subject", await this.getName(id)).replace("@desc", groupMetadata.desc?.toString() || "not known") :
+                        (chat.sBye || this.bye || conn.bye || `${emoji.bye} Until found, @user!`);
 
-                        let names = await this.getName(user)
-                        let namesg = await this.getName(id)
-                        let gettext = await fetch("https://raw.githubusercontent.com/fawwaz37/random/main/bijak.txt")
-                        let restext = await gettext.text()
-                        let katarandom = restext.split("\n")
-                        let mim_ = ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/msword", "application/pdf", "text/rtf"]
-                        let lin_ = ["https://www.youtube.com", "https://www.tiktok.com", "https://www.instagram.com", "https://www.facebook.com"]
-                        let wmwel = `\n\n📮 *Welcome:* If you find a bug, error or difficulty in use, please report/ask the Owner`
-                        let wmlea = `\n\n📮 *Byee:* If you find a bug, error or difficulty in use, please report/ask the Owner`
-                        
-                        let welb = await Welcome(pp, thumbnailUrl.getRandom(), names, user.length)
+                    const welran = await WelcomeLeave(await this.profilePictureUrl(user, "image").catch(() => hwaifu.getRandom()), await this.getName(user), `${res1.quote}`);
+                    const byeran = await WelcomeLeave(await this.profilePictureUrl(id, "image").catch(() => hwaifu.getRandom()), await this.getName(id), `${res1.quote}`);
 
-                        
-                        let byeeb = await Leave(pp, thumbnailUrl.getRandom(), names)
-                        let welran = [welb].getRandom()
-                        let byeran = [byeeb].getRandom()
-                        await this.sendFile(id, action == "add" ? welran : byeran, '', text, m)
-                        /* */
-                    }
+                    const lapor = `\n\n${emoji.mail} *Message:* If you find bugs, errors, or difficulties in use, please report/ask ${emoji.owner}`;
+                    await this.sendFile(id, isAddAction ? welran : byeran, '', welcomeText.replace("@user", "@" + participants[0].split("@")[0]) + lapor, null, null, {
+                        mentions: [participants[0]]
+                    });
                 }
             }
-            break
+            break;
         case "promote":
-            text = (chat.sPromote || this.spromote || conn.spromote || `${emoji.promote} @user *has been appointed as Admin*`)
-            break
-        case "demote":
-            text = (chat.sDemote || this.sdemote || conn.sdemote || `${emoji.demote} @user *no longer an Admin*`)
-            text = text.replace("@user", "@" + participants[0].split("@")[0])
+            const promoteText = (chat.sPromote || this.spromote || conn.spromote || `${emoji.promote} @user *has been appointed as Admin*`).replace("@user", "@" + participants[0].split("@")[0]);
             if (chat.detect) {
                 this.sendMessage(id, {
-                    text: text.trim(),
-                    mentions: [participants[0]],
+                    text: promoteText.trim(),
+                    mentions: [participants[0]]
                 }, {
-                    quoted: m,
-                })
+                    quoted: null
+                });
             }
-            break
-
+            break;
+        case "demote":
+            const demoteText = (chat.sDemote || this.sdemote || conn.sdemote || `${emoji.demote} @user *no longer an Admin*`).replace("@user", "@" + participants[0].split("@")[0]);
+            if (chat.detect) {
+                this.sendMessage(id, {
+                    text: demoteText.trim(),
+                    mentions: [participants[0]]
+                }, {
+                    quoted: null
+                });
+            }
+            break;
     }
 }
 
