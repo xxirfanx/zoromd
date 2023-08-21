@@ -10,12 +10,27 @@ import {
     WelcomeLeave
 } from "./lib/welcome.js";
 
-const { proto } = (await import('@adiwajshing/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function () {
     clearTimeout(this)
     resolve()
 }, ms))
+
+/**
+ * Handle messages upsert
+ * @param {import("@adiwajshing/baileys").BaileysEventMap<unknown>["messages.upsert"]} groupsUpdate 
+ */
+const {
+    getAggregateVotesInPollMessage,
+    makeInMemoryStore
+} = await (await import('@adiwajshing/baileys')).default;
+import Pino from "pino"
+const store = makeInMemoryStore({
+    logger: Pino().child({
+        level: 'fatal',
+        stream: 'store'
+    })
+})
 
 export async function handler(chatUpdate) { 
     this.msgqueue = this.msgqueue || []
@@ -448,6 +463,58 @@ Untuk mematikan fitur ini, ketik
         this.copyNForward(msg.chat, msg).catch(e => console.log(e, msg))
     } catch (e) {
         console.error(e)
+    }
+}
+
+/*
+ Polling Update 
+*/
+export async function pollUpdate(message) {
+  for (const { key, update } of message) {
+            if (message.pollUpdates) {
+                const pollCreation = await this.serializeM(this.loadMessage(key.id))
+                if (pollCreation) {
+                    const pollMessage = await getAggregateVotesInPollMessage({
+                        message: pollCreation.message,
+                        pollUpdates: pollCreation.pollUpdates,
+                    })
+                    message.pollUpdates[0].vote = pollMessage
+                    
+                    await console.log(pollMessage)
+                    this.appenTextMessage(message, message.pollUpdates[0].vote || pollMessage.filter((v) => v.voters.length !== 0)[0]?.name, message.message);
+                }
+            }
+        }
+}
+
+/*
+Update presence
+*/
+export async function presenceUpdate(presenceUpdate) {
+    const id = presenceUpdate.id;
+    const nouser = Object.keys(presenceUpdate.presences);
+    const status = presenceUpdate.presences[nouser]?.lastKnownPresence;
+    const user = global.db.data.users[nouser[0]];
+
+    if (user?.afk && status === "composing" && user.afk > -1) {
+        if (user.banned) {
+            user.afk = -1;
+            user.afkReason = "User Banned Afk";
+            return;
+        }
+
+        await console.log("AFK - TICK");
+        const username = nouser[0].split("@")[0];
+        const timeAfk = new Date() - user.afk;
+        const caption = `\n@${username} stop afk, he's typing\n\nReason: ${
+      user.afkReason ? user.afkReason : "No Reason"
+    }\nDuring ${timeAfk.toTimeString()} ago\n`;
+
+        this.reply(id, caption, null, {
+            mentions: this.parseMention(caption)
+        });
+        user.afk = -1;
+        user.afkReason = "";
     }
 }
 
