@@ -1,9 +1,10 @@
-import { instagram } from '@xct007/frieren-scraper'
-import fetch from 'node-fetch'
+import { instagram } from '@xct007/frieren-scraper';
+import fetch from 'node-fetch';
+
 let handler = async (m, { conn, args, usedPrefix, command }) => {
     if (!args[0]) throw `Use example ${usedPrefix}${command} https://www.instagram.com/p/ByxKbUSnubS/?utm_source=ig_web_copy_link`
     await m.reply(`Ｌｏａｄｉｎｇ．．．`)
-    let res = await instagram.v2(args[0])
+    let res = await instagram(args[0])
     if (res.error) return m.reply(`${res.message}`);
     for (let urRRl of res) {
     let shortUrRRl = await (await fetch(`https://tinyurl.com/api-create.php?url=${urRRl.url}`)).text()    
