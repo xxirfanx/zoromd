@@ -1,6 +1,6 @@
 FROM node:latest
 
-RUN git clone https://github.com/xxirfan/zoro /root/zoromd
+RUN git clone https://github.com/xxirfan/zoromd /root/zoromd
 WORKDIR /root/zoromd/
 RUN npm install npm@latest
 RUN npm i
