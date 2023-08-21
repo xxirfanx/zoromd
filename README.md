@@ -73,6 +73,18 @@ node .
 ```
 ## Arguments `node . [--options] [<session name>]`
 
+### `--mobile`
+
+Activate bot using phone number (no scan qr)
+
+### `--qr`
+
+Activate qr code 
+
+### `--pairing-code`
+
+Login With Pairing Code
+
 ### `--self`
 
 Activate self mode (Ignores other)
@@ -80,6 +92,10 @@ Activate self mode (Ignores other)
 ### `--server`
 
 Used for [heroku](https://heroku.com/) or scan through website
+
+### `--db`
+
+pass mongodb url or cloud url to connect to database, by the default it will connect to database.json
 
 ### `--autoread`
 
