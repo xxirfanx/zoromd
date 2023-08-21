@@ -1,17 +1,7 @@
-FROM node:20.5.0 AS node_base
-
-ENV NODE_VERSION=20.5.0
-RUN apt install -y curl
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-ENV NVM_DIR=/root/.nvm
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
-ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+FROM node:lts-buster
 
 RUN apt-get update && \
   apt-get install -y \
-  nodejs\
   ffmpeg \
   imagemagick \
   webp && \
@@ -20,10 +10,10 @@ RUN apt-get update && \
 
 COPY package.json .
 
-RUN npm i
+RUN npm install && npm install qrcode-terminal
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
