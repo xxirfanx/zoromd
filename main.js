@@ -1,138 +1,358 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+import './config.js';
 
-import './config.js'
-
-import path, { join } from 'path'
-import { platform } from 'process'
-import chalk from 'chalk'
-import { fileURLToPath, pathToFileURL } from 'url'
-import { createRequire } from 'module'
-global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') { return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString() }; global.__dirname = function dirname(pathURL) { return path.dirname(global.__filename(pathURL, true)) }; global.__require = function require(dir = import.meta.url) { return createRequire(dir) }
-
-import * as ws from 'ws'
 import {
-  readdirSync,
-  statSync,
-  unlinkSync,
-  existsSync,
-  readFileSync,
-  watch
-} from 'fs'
-import yargs from 'yargs'
-import { spawn } from 'child_process'
-import lodash from 'lodash'
-import syntaxerror from 'syntax-error'
-import { tmpdir } from 'os'
-import { format } from 'util'
+    createRequire
+} from "module";
+import path, {
+    join
+} from 'path';
 import {
-    makeWASocket,
+    fileURLToPath,
+    pathToFileURL
+} from 'url';
+import {
+    platform
+} from 'process';
+global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
+    return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString()
+}
+global.__dirname = function dirname(pathURL) {
+    return path.dirname(global.__filename(pathURL, true))
+}
+global.__require = function require(dir = import.meta.url) {
+    return createRequire(dir)
+}
+
+import * as ws from 'ws';
+import {
+    readdirSync,
+    statSync,
+    unlinkSync,
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    rmSync,
+    watch
+} from 'fs';
+
+import yargs from 'yargs';
+import {
+    promisify
+} from 'util';
+import {
+    spawn
+} from 'child_process';
+import lodash from 'lodash';
+import chalk from 'chalk';
+import syntaxerror from 'syntax-error';
+import {
+    tmpdir
+} from 'os';
+import {
+    format
+} from 'util';
+import {
+    Boom
+} from "@hapi/boom";
+import Pino from 'pino';
+import {
+    makeWaSocket,
     protoType,
     serialize
 } from './lib/simple.js';
-import { Low } from 'lowdb';
-import { JSONFile } from "lowdb/node"
-/* import {
-  mongoDB,
-  mongoDBV2
-} from './lib/mongoDB.js' */
-import storeSys from './lib/store2.js'
-const store = storeSys.makeInMemoryStore()
-const {
-	useMultiFileAuthState, 
-  // useSingleFileAuthState,
-  DisconnectReason
-} = await import('@adiwajshing/baileys')
+import {
+    Low
+} from 'lowdb';
+import { 
+  JSONFile 
+} from "lowdb/node";
+import {
+    mongoDB,
+    mongoDBV2
+} from './lib/mongoDB.js';
 
-const { CONNECTING } = ws
-const { chain } = lodash
+const {
+    DisconnectReason,
+    useMultiFileAuthState,
+    MessageRetryMap,
+    fetchLatestBaileysVersion,
+    makeCacheableSignalKeyStore,
+    makeInMemoryStore,
+    proto,
+    jidNormalizedUser,
+    PHONENUMBER_MCC,
+    Browsers
+} = await (await import('@adiwajshing/baileys')).default;
+
+import readline from "readline"
+import {
+    parsePhoneNumber
+} from "libphonenumber-js"
+const store = makeInMemoryStore({
+    logger: Pino().child({
+        level: 'fatal',
+        stream: 'store'
+    })
+})
+
+const pairingCode = process.argv.includes("--pairing-code")
+const useMobile = process.argv.includes("--mobile")
+const useQr = process.argv.includes("--qr")
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
+const question = (text) => new Promise((resolve) => rl.question(text, resolve))
+import NodeCache from "node-cache"
+const msgRetryCounterCache = new NodeCache()
+const {
+    CONNECTING
+} = ws
+const {
+    chain
+} = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
 protoType()
 serialize()
 
-global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({ ...query, ...(apikeyqueryname ? { [apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name] } : {}) })) : '')
-// global.Fn = function functionCallBack(fn, ...args) { return fn.call(global.conn, ...args) }
+global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({
+    ...query,
+    ...(apikeyqueryname ? {
+        [apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]
+    } : {})
+})) : '')
 global.timestamp = {
-  start: new Date
+    start: new Date
 }
 
 const __dirname = global.__dirname(import.meta.url)
-
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
-global.prefix = new RegExp('^[' + (opts['prefix'] || '‎xzXZ/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']')
 
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`))
 
-global.DATABASE = global.db // Backwards Compatibility
+
+global.DATABASE = global.db
 global.loadDatabase = async function loadDatabase() {
-  if (global.db.READ) return new Promise((resolve) => setInterval(async function () {
-    if (!global.db.READ) {
-      clearInterval(this)
-      resolve(global.db.data == null ? await global.loadDatabase() : global.db.data)
+    if (global.db.READ) return new Promise((resolve) => setInterval(async function() {
+        if (!global.db.READ) {
+            clearInterval(this)
+            resolve(global.db.data == null ? global.loadDatabase() : global.db.data)
+        }
+    }, 1 * 1000))
+    if (global.db.data !== null) return
+    global.db.READ = true
+    await global.db.read().catch(console.error)
+    global.db.READ = null
+    global.db.data = {
+        users: {},
+        chats: {},
+        stats: {},
+        msgs: {},
+        sticker: {},
+        settings: {},
+        ...(global.db.data || {})
     }
-  }, 1 * 1000))
-  if (global.db.data !== null) return
-  global.db.READ = true
-  await global.db.read().catch(console.error)
-  global.db.READ = null
-  global.db.data = {
-    users: {},
-    chats: {},
-    stats: {},
-    msgs: {},
-    sticker: {},
-    settings: {},
-    ...(global.db.data || {})
-  }
-  global.db.chain = chain(global.db.data)
+    global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
-global.authFolder = storeSys.fixFileName(`${opts._[0] || ''}sessions`)
-    let { state, saveCreds } = await useMultiFileAuthState(path.resolve('./sessions'))
+global.authFile = `sessions`;
+const {
+    state,
+    saveState,
+    saveCreds
+} = await useMultiFileAuthState(global.authFile);
+const msgRetryCounterMap = (MessageRetryMap) => {};
+const {
+    version
+} = await fetchLatestBaileysVersion();
 
-const connectionOptions = {
-  printQRInTerminal: true,
-  auth: state,
-  defaultQueryTimeoutMs: undefined,
-  downloadHistory: false,
-  version: [2, 2318, 11],
- getMessage: async (key) => (store.loadMessage(key.remoteJid, key.id) || store.loadMessage(key.id) || {}).message,
-// get message diatas untuk mengatasi pesan gagal dikirim, "menunggu pesan", dapat dicoba lagi
-	      patchMessageBeforeSending: (message) => {
-                const requiresPatch = !!(
-                    message.buttonsMessage 
-                    || message.templateMessage
-                    || message.listMessage
-                );
-                if (requiresPatch) {
-                    message = {
-                        viewOnceMessage: {
-                            message: {
-                                messageContextInfo: {
-                                    deviceListMetadataVersion: 2,
-                                    deviceListMetadata: {},
-                                },
-                                ...message,
-                            },
-                        },
-                    };
-                }
+if (!pairingCode && !useMobile && !useQr) {
+    const title = "INFO";
+    const message = "Please use one of the options: --pairing-code, --mobile, --qr";
+    const boxWidth = 40;
+    const horizontalLine = chalk.redBright("─".repeat(boxWidth));
 
-                return message;
-            }, 
-     defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+    const formatText = (text, bgColor, textColor) => chalk[bgColor](chalk[textColor](text.padStart(boxWidth / 2 + text.length / 2).padEnd(boxWidth)));
+
+    console.log(`╭${horizontalLine}╮
+|${formatText(title, 'bgRed', 'white')}|
+├${horizontalLine}┤
+|${formatText(message, 'bgWhite', 'red')}|
+╰${horizontalLine}╯`);
 }
 
-global.conn = makeWASocket(connectionOptions)
+const connectionOptions = {
+    ...(!pairingCode && !useMobile && !useQr && {
+        printQRInTerminal: false,
+        mobile: false
+    }),
+    ...(pairingCode && {
+        printQRInTerminal: !pairingCode
+    }),
+    ...(useMobile && {
+        mobile: true
+    }),
+    ...(useQr && {
+        printQRInTerminal: true
+    }),
+    patchMessageBeforeSending: (message) => {
+        const requiresPatch = !!(message.buttonsMessage || message.templateMessage || message.listMessage);
+        if (requiresPatch) {
+            message = {
+                viewOnceMessage: {
+                    message: {
+                        messageContextInfo: {
+                            deviceListMetadataVersion: 2,
+                            deviceListMetadata: {}
+                        },
+                        ...message
+                    }
+                }
+            };
+        }
+        return message;
+    },
+    msgRetryCounterMap,
+    logger: Pino({
+        level: 'fatal'
+    }),
+    auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, Pino().child({
+            level: 'fatal',
+            stream: 'store'
+        })),
+    },
+    browser: Browsers.macOS('Desktop'), // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
+    version,
+    getMessage: async (key) => {
+        let jid = jidNormalizedUser(key.remoteJid)
+        let msg = await store.loadMessage(jid, key.id)
+        return msg?.message || ""
+    },
+    msgRetryCounterCache, // Resolve waiting messages
+    connectTimeoutMs: 60_000,
+    defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+    generateHighQualityLinkPreview: true
+};
+
+global.conn = makeWaSocket(connectionOptions);
+store.bind(conn.ev)
 conn.isInit = false
+
+if (pairingCode && !conn.authState.creds.registered) {
+    if (useMobile) conn.logger.error('Cannot use pairing code with mobile api')
+    console.log(chalk.cyan('╭──────────────────────────────────────···'));
+    console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
+    console.log(chalk.cyan('├──────────────────────────────────────···'));
+    let phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
+    console.log(chalk.cyan('╰──────────────────────────────────────···'));
+    phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+    if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+        console.log(chalk.cyan('╭─────────────────────────────────────────────────···'));
+        console.log(`💬 ${chalk.redBright("Start with your country's WhatsApp code, Example 62xxx")}:`);
+        console.log(chalk.cyan('╰─────────────────────────────────────────────────···'));
+        console.log(chalk.cyan('╭──────────────────────────────────────···'));
+        console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
+        console.log(chalk.cyan('├──────────────────────────────────────···'));
+        phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
+        console.log(chalk.cyan('╰──────────────────────────────────────···'));
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+    }
+    let code = await conn.requestPairingCode(phoneNumber)
+    code = code?.match(/.{1,4}/g)?.join("-") || code
+    console.log(chalk.cyan('╭──────────────────────────────────────···'));
+    console.log(` 💻 ${chalk.redBright('Your Pairing Code')}:`);
+    console.log(chalk.cyan('├──────────────────────────────────────···'));
+    console.log(`   ${chalk.cyan('- Code')}: ${code}`);
+    console.log(chalk.cyan('╰──────────────────────────────────────···'));
+    rl.close()
+}
+
+if (useMobile && !conn.authState.creds.registered) {
+    const {
+        registration
+    } = conn.authState.creds || {
+        registration: {}
+    }
+    if (!registration.phoneNumber) {
+        console.log(chalk.cyan('╭──────────────────────────────────────···'));
+        console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
+        console.log(chalk.cyan('├──────────────────────────────────────···'));
+        let phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
+        console.log(chalk.cyan('╰──────────────────────────────────────···'));
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+        if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+            console.log(chalk.cyan('╭─────────────────────────────────────────────────···'));
+            console.log(`💬 ${chalk.redBright("Start with your country's WhatsApp code, Example 62xxx")}:`);
+            console.log(chalk.cyan('╰─────────────────────────────────────────────────···'));
+            console.log(chalk.cyan('╭──────────────────────────────────────···'));
+            console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
+            console.log(chalk.cyan('├──────────────────────────────────────···'));
+            phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
+            console.log(chalk.cyan('╰──────────────────────────────────────···'));
+            phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+        }
+        registration.phoneNumber = "+" + phoneNumber
+    }
+
+    const phoneNumber = parsePhoneNumber(registration.phoneNumber)
+    if (!phoneNumber.isValid()) conn.logger.error('Invalid phone number: ' + registration.phoneNumber)
+    registration.phoneNumber = phoneNumber.format("E.164")
+    registration.phoneNumberCountryCode = phoneNumber.countryCallingCode
+    registration.phoneNumberNationalNumber = phoneNumber.nationalNumber
+    const mcc = PHONENUMBER_MCC[phoneNumber.countryCallingCode]
+    registration.phoneNumberMobileCountryCode = mcc
+    async function enterCode() {
+        try {
+            console.log(chalk.cyan('╭──────────────────────────────────────···'));
+            console.log(`📨 ${chalk.redBright('Please Enter Your OTP Code')}:`);
+            console.log(chalk.cyan('├──────────────────────────────────────···'));
+            const code = await question(`   ${chalk.cyan('- Code')}: `);
+            console.log(chalk.cyan('╰──────────────────────────────────────···'));
+            const response = await conn.register(code.replace(/[^0-9]/g, '').trim().toLowerCase())
+            console.log(chalk.cyan('╭─────────────────────────────────────────────────···'));
+            console.log(`💬 ${chalk.redBright("Successfully registered your phone number.")}`);
+            console.log(chalk.cyan('╰─────────────────────────────────────────────────···'));
+            console.log(response)
+            rl.close()
+        } catch (error) {
+            conn.logger.error('Failed to register your phone number. Please try again.\n', error)
+            await askOTP()
+        }
+    }
+
+    async function askOTP() {
+        console.log(chalk.cyan('╭──────────────────────────────────────···'));
+        console.log(`📨 ${chalk.redBright('What method do you want to use? "sms" or "voice"')}`);
+        console.log(chalk.cyan('├──────────────────────────────────────···'));
+        let code = await question(`   ${chalk.cyan('- Method')}: `);
+        console.log(chalk.cyan('╰──────────────────────────────────────···'));
+        code = code.replace(/["']/g, '').trim().toLowerCase()
+        if (code !== 'sms' && code !== 'voice') return await askOTP()
+        registration.method = code
+        try {
+            await conn.requestRegistrationCode(registration)
+            await enterCode()
+        } catch (error) {
+            conn.logger.error('Failed to request registration code. Please try again.\n', error)
+            await askOTP()
+        }
+    }
+    await askOTP()
+}
+
+conn.logger.info(`W A I T I N G\n`);
 
 if (!opts['test']) {
     if (global.db) {
         setInterval(async () => {
-            if (global.db.data) await global.db.write().catch(console.error)
-            // if (opts['autocleartmp'] && (global.support || {}).find)(tmp = [os.tmpdir(), 'tmp'], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
-          clearTmp()
+            if (global.db.data) await global.db.write();
+            if (opts['autocleartmp'] && (global.support || {}).find)(tmp = [os.tmpdir(), 'tmp'], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
         }, 30 * 1000);
     }
 }
@@ -150,16 +370,36 @@ function clearTmp() {
     });
 }
 
+function purgeSession() {
+    let prekey = [];
+    const directorio = readdirSync('./sessions');
+    const filesFolderPreKeys = directorio.filter((file) => {
+        return file.startsWith('pre-key-');
+    });
+    prekey = [...prekey, ...filesFolderPreKeys];
+    filesFolderPreKeys.forEach((files) => {
+        unlinkSync(`./sessions/${files}`);
+    });
+}
+
 async function connectionUpdate(update) {
-  const { connection, lastDisconnect, isNewLogin } = update
-  if (isNewLogin) conn.isInit = true
-  const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
-  if (code && code !== DisconnectReason.loggedOut && conn?.ws.readyState !== ws.default.CONNECTING) {
-    console.log(await global.reloadHandler(true).catch(console.error))
-    global.timestamp.connect = new Date
-  }
-  // console.log(JSON.stringify(update, null, 4))
-  if (global.db.data == null) loadDatabase()
+    const {
+        connection,
+        lastDisconnect,
+        isNewLogin,
+        qr
+    } = update;
+    global.stopped = connection;
+    if (isNewLogin) conn.isInit = true;
+    const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
+    if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
+        console.log(await global.reloadHandler(true).catch(console.error));
+    }
+    if (global.db.data == null) loadDatabase();
+    if (!pairingCode && !useMobile && useQr && qr != 0 && qr != undefined) {
+        conn.logger.info(chalk.yellow('🚩ㅤScan this QR code, the QR code will expire in 60 seconds.'));
+    }
+    if (global.db.data == null) loadDatabase()
     if (connection === "open") {
         const {
             jid,
@@ -192,8 +432,7 @@ async function connectionUpdate(update) {
     }
 }
 
-process.on('uncaughtException', console.error)
-// let strQuot = /(["'])(?:(?=(\\?))\2.)*?\1/
+process.on('uncaughtException', console.error);
 
 let isInit = true;
 let handler = await import('./handler.js');
@@ -210,30 +449,50 @@ global.reloadHandler = async function(restatConn) {
             global.conn.ws.close();
         } catch {}
         conn.ev.removeAllListeners();
-        global.conn = makeWASocket(connectionOptions, {
+        global.conn = makeWaSocket(connectionOptions, {
             chats: oldChats
         });
         isInit = true;
     }
-  if (!isInit) {
-    conn.ev.off('messages.upsert', conn.handler)
-    conn.ev.off('group-participants.update', conn.participantsUpdate)
-    conn.ev.off('message.delete', conn.onDelete)
-    conn.ev.off('connection.update', conn.connectionUpdate)
-    conn.ev.off('creds.update', conn.credsUpdate)
-  }
+    if (!isInit) {
+        conn.ev.off('messages.upsert', conn.handler);
+        conn.ev.off('messages.update', conn.pollUpdate);
+        conn.ev.off('group-participants.update', conn.participantsUpdate);
+        conn.ev.off('message.delete', conn.onDelete);
+        conn.ev.off("presence.update", conn.presenceUpdate);
+        conn.ev.off('connection.update', conn.connectionUpdate);
+        conn.ev.off('creds.update', conn.credsUpdate);
+    }
 
-  conn.welcome = 'Hai, @user!\nWelcome to @subject\n\n@desc'
-  conn.bye = 'GOOD BYE @user!'
-  conn.spromote = '@user now admin!'
-  conn.sdemote = '@user now not admin!'
-  conn.handler = handler.handler.bind(global.conn)
-  conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
-  conn.onDelete = handler.deleteUpdate.bind(global.conn)
-  conn.connectionUpdate = connectionUpdate.bind(global.conn)
-  conn.credsUpdate = saveCreds.bind(global.conn)
+    const emoji = {
+        welcome: '👋',
+        bye: '👋',
+        promote: '👤👑',
+        demote: '👤🙅‍♂️',
+        desc: '📝',
+        subject: '📌',
+        icon: '🖼️',
+        revoke: '🔗',
+        announceOn: '🔒',
+        announceOff: '🔓',
+        restrictOn: '🚫',
+        restrictOff: '✅',
+    };
 
-  const currentDateTime = new Date();
+    conn.welcome = `${emoji.welcome} Hallo @user\n\n   *W E L C O M E*\n⫹⫺ In groups @subject\n\n⫹⫺ Read *DESCRIPTION*\n@desc`;
+    conn.bye = `   *G O O D B Y E*\n${emoji.bye} @user`;
+    conn.spromote = `*${emoji.promote} @user* now be admin!`;
+    conn.sdemote = `*${emoji.demote} @user* no longer admin!`;
+
+    conn.handler = handler.handler.bind(global.conn);
+    conn.pollUpdate = handler.pollUpdate.bind(global.conn);
+    conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
+    conn.onDelete = handler.deleteUpdate.bind(global.conn);
+    conn.presenceUpdate = handler.presenceUpdate.bind(global.conn);
+    conn.connectionUpdate = connectionUpdate.bind(global.conn);
+    conn.credsUpdate = saveCreds.bind(global.conn, true);
+
+    const currentDateTime = new Date();
     const messageDateTime = new Date(conn.ev);
     if (currentDateTime >= messageDateTime) {
         const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
@@ -241,14 +500,16 @@ global.reloadHandler = async function(restatConn) {
         const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
     }
 
-  conn.ev.on('messages.upsert', conn.handler)
-  conn.ev.on('group-participants.update', conn.participantsUpdate)
-  conn.ev.on('message.delete', conn.onDelete)
-  conn.ev.on('connection.update', conn.connectionUpdate)
-  conn.ev.on('creds.update', conn.credsUpdate)
-  isInit = false
-   return true
-}
+    conn.ev.on('messages.upsert', conn.handler);
+    conn.ev.on("messages.update", conn.pollUpdate);
+    conn.ev.on('group-participants.update', conn.participantsUpdate);
+    conn.ev.on('message.delete', conn.onDelete);
+    conn.ev.on("presence.update", conn.presenceUpdate);
+    conn.ev.on('connection.update', conn.connectionUpdate);
+    conn.ev.on('creds.update', conn.credsUpdate);
+    isInit = false;
+    return true;
+};
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
@@ -297,8 +558,6 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
-
-/* QuickTest */
 async function _quickTest() {
     const test = await Promise.all([
         spawn('ffmpeg'),
@@ -342,6 +601,16 @@ setInterval(async () => {
     ));
 }, 60 * 60 * 1000);
 
+setInterval(async () => {
+    if (stopped === 'close' || !conn || !conn.user) return;
+    await purgeSession();
+    console.log(chalk.cyanBright(
+        `\n╭───────────────────────────────────···\n│\n` +
+        `│  Saved Sessions Deleted ✅\n│\n` +
+        `╰───────────────────────────────────···\n`
+    ));
+}, 60 * 60 * 1000);
+
 function clockString(ms) {
     const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
     const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24;
@@ -349,5 +618,4 @@ function clockString(ms) {
     const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
     return [d, ' Day ', h, ' hours ', m, ' Minutes ', s, ' Second '].map((v) => v.toString().padStart(2, '0')).join('');
 }
-
 _quickTest().catch(console.error);
