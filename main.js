@@ -227,7 +227,7 @@ const connectionOptions = {
             stream: 'store'
         })),
     },
-    browser: Browsers.macOS('Desktop'), // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
+    browser: ['Chrome (Linux)', '', ''], // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
     version,
     getMessage: async (key) => {
         let jid = jidNormalizedUser(key.remoteJid)
