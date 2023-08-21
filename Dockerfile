@@ -1,18 +1,9 @@
-FROM node:lts-buster
+FROM node:latest
 
-RUN apt-get update && \
-  apt-get install -y \
-  ffmpeg \
-  imagemagick \
-  webp && \
-  apt-get upgrade -y && \
-  rm -rf /var/lib/apt/lists/*
-
-COPY package.json .
-
-RUN npm i && npm i qrcode-terminal
-
-COPY . .
+RUN git clone https://github.com/xxirfan/zoro /root/zoromd
+WORKDIR /root/zoromd/
+RUN npm install npm@latest
+RUN npm i
 
 EXPOSE 5000
 
