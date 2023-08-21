@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:lts-buster
 
 RUN apt-get update && \
   apt-get install -y \
@@ -10,10 +10,10 @@ RUN apt-get update && \
 
 COPY package.json .
 
-RUN npm i && npm i qrcode-terminal
+RUN npm install && npm install qrcode-terminal
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["node", ".", "--qr"]
+CMD ["npm", "start"]
