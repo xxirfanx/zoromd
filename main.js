@@ -23,6 +23,8 @@ import { spawn } from 'child_process'
 import lodash from 'lodash'
 import syntaxerror from 'syntax-error'
 import { tmpdir } from 'os'
+import Pino from "pino"
+import NodeCache from "node-cache"
 import { format } from 'util'
 import {
     makeWaSocket,
@@ -35,10 +37,10 @@ import { JSONFile } from "lowdb/node"
   mongoDB,
   mongoDBV2
 } from './lib/mongoDB.js' */
-import storeSys from './lib/store2.js'
-const store = storeSys.makeInMemoryStore()
 const {
-	useMultiFileAuthState, 
+	useMultiFileAuthState,
+  makeCacheableSignalKeyStore,
+  makeInMemoryStore,
   // useSingleFileAuthState,
   DisconnectReason
 } = await import('@adiwajshing/baileys')
@@ -46,6 +48,8 @@ const {
 const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
+
+const store = makeInMemoryStore({ logger: Pino({ level: "fatal" }).child({ level: "fatal" }) })
 
 protoType()
 serialize()
@@ -88,16 +92,35 @@ global.loadDatabase = async function loadDatabase() {
 }
 loadDatabase()
 
-global.authFolder = storeSys.fixFileName(`${opts._[0] || ''}sessions`)
-    let { state, saveCreds } = await useMultiFileAuthState(path.resolve('./sessions'))
+global.authFile = `sessions`;
+const {
+    state,
+    saveState,
+    saveCreds
+} = await useMultiFileAuthState(global.authFile);
+const msgRetryCounterCache = new NodeCache()
+const msgRetryCounterMap = (MessageRetryMap) => {};
 
 const connectionOptions = {
   printQRInTerminal: true,
-  auth: state,
+  msgRetryCounterMap,
+    logger: Pino({
+        level: 'fatal'
+    }),
+  auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, Pino().child({
+            level: 'fatal',
+            stream: 'store'
+        })),
+    },
   downloadHistory: false,
   version: [2, 2318, 11],
- getMessage: async (key) => (store.loadMessage(key.remoteJid, key.id) || store.loadMessage(key.id) || {}).message,
-// get message diatas untuk mengatasi pesan gagal dikirim, "menunggu pesan", dapat dicoba lagi
+  getMessage: async (key) => {
+        let jid = jidNormalizedUser(key.remoteJid)
+        let msg = await store.loadMessage(jid, key.id)
+        return msg?.message || ""
+    },
 	      patchMessageBeforeSending: (message) => {
                 const requiresPatch = !!(
                     message.buttonsMessage 
@@ -119,12 +142,15 @@ const connectionOptions = {
                 }
 
                 return message;
-            }, 
+            },
+      msgRetryCounterCache, // Resolve waiting messages
      defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
 }
 
 global.conn = makeWaSocket(connectionOptions)
 conn.isInit = false
+
+conn.logger.info(`W A I T I N G\n`);
 
 if (!opts['test']) {
     if (global.db) {
@@ -215,22 +241,27 @@ global.reloadHandler = async function(restatConn) {
         isInit = true;
     }
   if (!isInit) {
-    conn.ev.off('messages.upsert', conn.handler)
-    conn.ev.off('group-participants.update', conn.participantsUpdate)
-    conn.ev.off('message.delete', conn.onDelete)
-    conn.ev.off('connection.update', conn.connectionUpdate)
-    conn.ev.off('creds.update', conn.credsUpdate)
+    conn.ev.off('messages.upsert', conn.handler);
+    conn.ev.off('messages.update', conn.pollUpdate);
+    conn.ev.off('group-participants.update', conn.participantsUpdate);
+    conn.ev.off('message.delete', conn.onDelete);
+    conn.ev.off("presence.update", conn.presenceUpdate);
+    conn.ev.off('connection.update', conn.connectionUpdate);
+    conn.ev.off('creds.update', conn.credsUpdate);
   }
 
   conn.welcome = 'Hai, @user!\nWelcome to @subject\n\n@desc'
   conn.bye = 'GOOD BYE @user!'
   conn.spromote = '@user now admin!'
   conn.sdemote = '@user now not admin!'
-  conn.handler = handler.handler.bind(global.conn)
-  conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
-  conn.onDelete = handler.deleteUpdate.bind(global.conn)
-  conn.connectionUpdate = connectionUpdate.bind(global.conn)
-  conn.credsUpdate = saveCreds.bind(global.conn)
+	
+  conn.handler = handler.handler.bind(global.conn);
+  conn.pollUpdate = handler.pollUpdate.bind(global.conn);
+  conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
+  conn.onDelete = handler.deleteUpdate.bind(global.conn);
+  conn.presenceUpdate = handler.presenceUpdate.bind(global.conn);
+  conn.connectionUpdate = connectionUpdate.bind(global.conn);
+  conn.credsUpdate = saveCreds.bind(global.conn);
 
   const currentDateTime = new Date();
     const messageDateTime = new Date(conn.ev);
@@ -240,11 +271,13 @@ global.reloadHandler = async function(restatConn) {
         const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
     }
 
-  conn.ev.on('messages.upsert', conn.handler)
-  conn.ev.on('group-participants.update', conn.participantsUpdate)
-  conn.ev.on('message.delete', conn.onDelete)
-  conn.ev.on('connection.update', conn.connectionUpdate)
-  conn.ev.on('creds.update', conn.credsUpdate)
+  conn.ev.on('messages.upsert', conn.handler);
+  conn.ev.on("messages.update", conn.pollUpdate);
+  conn.ev.on('group-participants.update', conn.participantsUpdate);
+  conn.ev.on('message.delete', conn.onDelete);
+  conn.ev.on("presence.update", conn.presenceUpdate);
+  conn.ev.on('connection.update', conn.connectionUpdate);
+  conn.ev.on('creds.update', conn.credsUpdate);
   isInit = false
    return true
 }
