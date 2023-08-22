@@ -73,18 +73,6 @@ node .
 ```
 ## Arguments `node . [--options] [<session name>]`
 
-### `--mobile`
-
-Activate bot using phone number (no scan qr)
-
-### `--qr`
-
-Activate qr code 
-
-### `--pairing-code`
-
-Login With Pairing Code
-
 ### `--self`
 
 Activate self mode (Ignores other)
