@@ -98,7 +98,6 @@ const store = makeInMemoryStore({
 
 const pairingCode = !!global.pairingNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
-const useQr = process.argv.includes("--qr")
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -170,9 +169,9 @@ const {
     version
 } = await fetchLatestBaileysVersion();
 
-if (!pairingCode && !useMobile && !useQr) {
+if (!pairingCode && !useMobile) {
     const title = "INFO";
-    const message = "Please use one of the options: --pairing-code, --mobile,";
+    const message = "Please use one of the options: --pairing-code, --mobile";
     const boxWidth = 40;
     const horizontalLine = chalk.redBright("─".repeat(boxWidth));
 
@@ -186,19 +185,8 @@ if (!pairingCode && !useMobile && !useQr) {
 }
 
 const connectionOptions = {
-    ...(!pairingCode && !useMobile && !useQr && {
-        printQRInTerminal: false,
-        mobile: false
-    }),
-    ...(pairingCode && {
-        printQRInTerminal: !pairingCode
-    }),
-    ...(useMobile && {
-        mobile: true // mobile api (prone to bans)
-    }),
-    ...(useQr && {
-        printQRInTerminal: true
-    }),
+    printQRInTerminal: !pairingCode, // popping up QR in terminal log
+    mobile: useMobile, // mobile api (prone to bans)
     patchMessageBeforeSending: (message) => {
         const requiresPatch = !!(message.buttonsMessage || message.templateMessage || message.listMessage);
         if (requiresPatch) {
@@ -399,7 +387,7 @@ async function connectionUpdate(update) {
         console.log(await global.reloadHandler(true).catch(console.error));
     }
     if (global.db.data == null) loadDatabase();
-    if (!pairingCode && !useMobile && useQr && qr != 0 && qr != undefined) {
+    if (!pairingCode && !useMobile) {
         conn.logger.info(chalk.yellow('🚩ㅤScan this QR code, the QR code will expire in 60 seconds.'));
     }
     if (global.db.data == null) loadDatabase()
