@@ -96,9 +96,8 @@ const store = makeInMemoryStore({
     })
 })
 
-const pairingCode = process.argv.includes("--pairing-code")
+const pairingCode = !!global.pairingNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
-const useQr = process.argv.includes("--qr")
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -170,9 +169,9 @@ const {
     version
 } = await fetchLatestBaileysVersion();
 
-if (!pairingCode && !useMobile && !useQr) {
+if (!pairingCode && !useMobile) {
     const title = "INFO";
-    const message = "Please use one of the options: --pairing-code, --mobile, --qr";
+    const message = "Please use one of the options: --pairing-code, --mobile";
     const boxWidth = 40;
     const horizontalLine = chalk.redBright("─".repeat(boxWidth));
 
@@ -186,19 +185,8 @@ if (!pairingCode && !useMobile && !useQr) {
 }
 
 const connectionOptions = {
-    ...(!pairingCode && !useMobile && !useQr && {
-        printQRInTerminal: false,
-        mobile: false
-    }),
-    ...(pairingCode && {
-        printQRInTerminal: !pairingCode
-    }),
-    ...(useMobile && {
-        mobile: true
-    }),
-    ...(useQr && {
-        printQRInTerminal: true
-    }),
+    printQRInTerminal: !pairingCode, // popping up QR in terminal log
+    mobile: useMobile, // mobile api (prone to bans)
     patchMessageBeforeSending: (message) => {
         const requiresPatch = !!(message.buttonsMessage || message.templateMessage || message.listMessage);
         if (requiresPatch) {
@@ -235,43 +223,46 @@ const connectionOptions = {
         return msg?.message || ""
     },
     msgRetryCounterCache, // Resolve waiting messages
-    connectTimeoutMs: 60_000,
     defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
-    generateHighQualityLinkPreview: true
 };
 
 global.conn = makeWaSocket(connectionOptions);
 store.bind(conn.ev)
 conn.isInit = false
 
-if (pairingCode && !conn.authState.creds.registered) {
-    if (useMobile) conn.logger.error('Cannot use pairing code with mobile api')
-    console.log(chalk.cyan('╭──────────────────────────────────────···'));
-    console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
-    console.log(chalk.cyan('├──────────────────────────────────────···'));
-    let phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
-    console.log(chalk.cyan('╰──────────────────────────────────────···'));
-    phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
-    if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
-        console.log(chalk.cyan('╭─────────────────────────────────────────────────···'));
-        console.log(`💬 ${chalk.redBright("Start with your country's WhatsApp code, Example 62xxx")}:`);
-        console.log(chalk.cyan('╰─────────────────────────────────────────────────···'));
-        console.log(chalk.cyan('╭──────────────────────────────────────···'));
-        console.log(`📨 ${chalk.redBright('Please type your WhatsApp number')}:`);
-        console.log(chalk.cyan('├──────────────────────────────────────···'));
-        phoneNumber = await question(`   ${chalk.cyan('- Number')}: `);
-        console.log(chalk.cyan('╰──────────────────────────────────────···'));
-        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
-    }
-    let code = await conn.requestPairingCode(phoneNumber)
-    code = code?.match(/.{1,4}/g)?.join("-") || code
-    console.log(chalk.cyan('╭──────────────────────────────────────···'));
-    console.log(` 💻 ${chalk.redBright('Your Pairing Code')}:`);
-    console.log(chalk.cyan('├──────────────────────────────────────···'));
-    console.log(`   ${chalk.cyan('- Code')}: ${code}`);
-    console.log(chalk.cyan('╰──────────────────────────────────────···'));
-    rl.close()
-}
+// login use pairing code
+// source code https://github.com/WhiskeySockets/Baileys/blob/master/Example/example.ts#L61
+   if (pairingCode && !conn.authState.creds.registered) {
+      if (useMobile) throw new Error('Cannot use pairing code with mobile api')
+
+      let phoneNumber
+      if (!!global.pairingNumber) {
+         phoneNumber = global.pairingNumber.replace(/[^0-9]/g, '')
+
+         if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+            console.log(chalk.bgBlack(chalk.redBright("Start with your country's WhatsApp code, Example : 62xxx")))
+            process.exit(0)
+         }
+      } else {
+         phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number : `)))
+         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+         // Ask again when entering the wrong number
+         if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+            console.log(chalk.bgBlack(chalk.redBright("Start with your country's WhatsApp code, Example : 62xxx")))
+
+            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number : `)))
+            phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+            rl.close()
+         }
+      }
+
+      setTimeout(async () => {
+         let code = await conn.requestPairingCode(phoneNumber)
+         code = code?.match(/.{1,4}/g)?.join("-") || code
+         console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
+      }, 3000)
+   }
 
 if (useMobile && !conn.authState.creds.registered) {
     const {
@@ -396,7 +387,7 @@ async function connectionUpdate(update) {
         console.log(await global.reloadHandler(true).catch(console.error));
     }
     if (global.db.data == null) loadDatabase();
-    if (!pairingCode && !useMobile && useQr && qr != 0 && qr != undefined) {
+    if (!pairingCode && !useMobile) {
         conn.logger.info(chalk.yellow('🚩ㅤScan this QR code, the QR code will expire in 60 seconds.'));
     }
     if (global.db.data == null) loadDatabase()
