@@ -9,9 +9,6 @@ global.owner =
 // Put your number here
 // [number, he creator/owner?, he developer?]
 
-// login use pairing code
-global.pairingNumber = ""
-
 global.mods = [] // Want some help?
 global.prems = [] // Premium user has unlimited limit
 
