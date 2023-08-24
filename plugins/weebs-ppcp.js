@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 let handler = async (m, { conn, usedPrefix, command }) => {
 	try {
 		let anu = await (await fetch(`https://api.akuari.my.id/randomimage/ppcouple`)).json()
