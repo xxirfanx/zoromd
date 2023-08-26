@@ -13,7 +13,7 @@ let handler = async (m, {
     args,
     usedPrefix
 }) => {
-    if (!text) throw `Use example *${usedPrefix + command}* naruto blue bird`
+    if (!text) throw `Use example *${usedPrefix + command}* Somewhere Only We Know`
     const combinedRegex = /^(play|song)$/i;
     const isMP3 = combinedRegex.test(command);
 
