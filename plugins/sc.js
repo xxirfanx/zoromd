@@ -1,3 +1,12 @@
+/* -------------------------------------------------------*/
+/* [❗]                      [❗]                      [❗] */
+/*                                                       */
+/*        |- [ ⚠ ] - CODE CREDITS - [ ⚠ ] -|            */
+/*          —◉ DEVELOPED BY LUA SER OFC:                 */
+/*       ◉ git : (https://github.com/xxirfanx)           */
+/*                                                       */
+/* [❗]                      [❗]                      [❗] */
+/* -------------------------------------------------------*/
 import moment from 'moment-timezone';
 import fetch from 'node-fetch';
 
