@@ -32,6 +32,9 @@ import {
     serialize
 } from './lib/simple.js';
 import { Low } from 'lowdb';
+import single2multi from './lib/single2multi.js';
+import storeSystem from './lib/store-multi.js';
+import Helper from './lib/helper.js';
 import { JSONFile } from "lowdb/node"
 /* import {
   mongoDB,
@@ -49,7 +52,7 @@ const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
-const store = makeInMemoryStore({ logger: Pino({ level: "fatal" }).child({ level: "fatal" }) })
+const singleToMulti = process.argv.includes("--singleauth")
 
 protoType()
 serialize()
@@ -93,13 +96,36 @@ global.loadDatabase = async function loadDatabase() {
 loadDatabase()
 
 global.authFile = `sessions`;
-const {
-    state,
-    saveState,
-    saveCreds
-} = await useMultiFileAuthState(global.authFile);
 const msgRetryCounterCache = new NodeCache()
 const msgRetryCounterMap = (MessageRetryMap) => {};
+
+var authFolder = storeSystem.fixFileName(`${Helper.opts._[0] || ''}sessions`)
+var authFile = `${Helper.opts._[0] || 'session'}.data.json`
+
+var [
+	isCredsExist,
+	isAuthSingleFileExist,
+	authState
+] = await Promise.all([
+	Helper.checkFileExists(authFolder + '/creds.json'),
+	Helper.checkFileExists(authFile),
+	storeSystem.useMultiFileAuthState(authFolder)
+])
+
+var store = storeSystem.makeInMemoryStore()
+
+// Convert single auth to multi auth
+if (Helper.opts['singleauth'] || Helper.opts['singleauthstate']) {
+    if (!isCredsExist && isAuthSingleFileExist) {
+        console.debug(chalk.blue('- singleauth -'), chalk.yellow('creds.json not found'), chalk.green('compiling singleauth to multiauth...'));
+        await single2multi(authFile, authFolder, authState);
+        console.debug(chalk.blue('- singleauth -'), chalk.green('compiled successfully'));
+        authState = await storeSystem.useMultiFileAuthState(authFolder);
+    } else if (!isAuthSingleFileExist) console.error(chalk.blue('- singleauth -'), chalk.red('singleauth file not found'));
+}
+
+var storeFile = `${Helper.opts._[0] || 'data'}.store.json`
+store.readFromFile(storeFile)
 
 const connectionOptions = {
   printQRInTerminal: true,
@@ -108,8 +134,8 @@ const connectionOptions = {
         level: 'fatal'
     }),
   auth: {
-        creds: state.creds,
-        keys: makeCacheableSignalKeyStore(state.keys, Pino().child({
+        creds: authState.state.creds,
+        keys: makeCacheableSignalKeyStore(authState.state.keys, Pino().child({
             level: 'fatal',
             stream: 'store'
         })),
@@ -143,7 +169,7 @@ const connectionOptions = {
 
                 return message;
             },
-      msgRetryCounterCache, // Resolve waiting messages
+     msgRetryCounterCache, // Resolve waiting messages
      defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
 }
 
@@ -261,7 +287,7 @@ global.reloadHandler = async function(restatConn) {
   conn.onDelete = handler.deleteUpdate.bind(global.conn);
   conn.presenceUpdate = handler.presenceUpdate.bind(global.conn);
   conn.connectionUpdate = connectionUpdate.bind(global.conn);
-  conn.credsUpdate = saveCreds.bind(global.conn);
+  conn.credsUpdate = authState.saveCreds.bind(global.conn);
 
   const currentDateTime = new Date();
     const messageDateTime = new Date(conn.ev);
