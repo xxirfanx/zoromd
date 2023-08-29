@@ -205,8 +205,7 @@ async function connectionUpdate(update) {
     const {
         connection,
         lastDisconnect,
-        isNewLogin,
-        qr
+        isNewLogin
     } = update;
     global.stopped = connection;
     if (isNewLogin) conn.isInit = true;
@@ -227,7 +226,7 @@ async function connectionUpdate(update) {
    ℹ️ *Bot Info:*
    
    🕒 here and now: ${currentTime}
-   👤 Name: ${name || 'zoromd'}
+   👤 Name: ${name || 'zoro md'}
    🏷️ Tag: @${jid.split('@')[0]}
    ⏱️ Speed ping: ${pingStart - new Date()}ms
    📅 Date: ${currentTime.toDateString()}
