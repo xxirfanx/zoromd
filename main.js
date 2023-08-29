@@ -202,13 +202,18 @@ function clearTmp() {
 }
 
 async function connectionUpdate(update) {
-  const { connection, lastDisconnect, isNewLogin } = update
-  if (isNewLogin) conn.isInit = true
-  const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
-  if (code && code !== DisconnectReason.loggedOut && conn?.ws.readyState !== ws.default.CONNECTING) {
-    console.log(await global.reloadHandler(true).catch(console.error))
-    global.timestamp.connect = new Date
-  }
+    const {
+        connection,
+        lastDisconnect,
+        isNewLogin,
+        qr
+    } = update;
+    global.stopped = connection;
+    if (isNewLogin) conn.isInit = true;
+    const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
+    if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
+        conn.logger.info(await global.reloadHandler(true).catch(console.error));
+    }
   // console.log(JSON.stringify(update, null, 4))
   if (global.db.data == null) loadDatabase()
     if (connection === "open") {
