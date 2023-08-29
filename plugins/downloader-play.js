@@ -37,7 +37,7 @@ let handler = async (m, {
 📅 *Upload:* ${ago ? ago : 'not know'}
 🔗 *Link:* ${url}
 
-*_sending audio, wait a moment．．．_
+*_sending audio, wait a moment．．．_*
 `
         let ytthumb = await (await conn.getFile(thumbnail)).data
         let msg = await generateWAMessageFromContent(m.chat, {
