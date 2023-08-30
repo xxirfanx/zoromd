@@ -43,7 +43,7 @@ var handler = async (m, { conn, text, usedPrefix, command }) => {
 📏 *Resolution HD:* ${resolution_HD}
 🌎 *Source:* Google`, m);
 
-            await new Promise(resolve => setTimeout(resolve, 2000)); // give me a pause for a few seconds 1000 -> 1 detik
+            await new Promise(resolve => setTimeout(resolve, 2000)); // give me a pause for a few seconds 1000 -> 1 second
         } catch (error) {
             console.error('Error fetching image:', error);
             // Skip and continue to the next picture
