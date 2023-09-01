@@ -24,6 +24,8 @@ import lodash from 'lodash'
 import syntaxerror from 'syntax-error'
 import { tmpdir } from 'os'
 import Pino from "pino"
+import P from "pino"
+import pretty from 'pino-pretty'
 import NodeCache from "node-cache"
 import { format } from 'util'
 import {
@@ -50,7 +52,7 @@ const {
 
 const { CONNECTING } = ws
 const { chain } = lodash
-const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
+const PORT = process.env.PORT || process.env.SERVER_PORT || 8080
 
 const singleToMulti = process.argv.includes("--singleauth")
 
@@ -96,6 +98,7 @@ global.loadDatabase = async function loadDatabase() {
 loadDatabase()
 
 global.authFile = `sessions`;
+
 const msgRetryCounterCache = new NodeCache()
 const msgRetryCounterMap = (MessageRetryMap) => {};
 
@@ -127,50 +130,34 @@ if (Helper.opts['singleauth'] || Helper.opts['singleauthstate']) {
 var storeFile = `${Helper.opts._[0] || 'data'}.store.json`
 store.readFromFile(storeFile)
 
+const logger = Pino({
+    transport: {
+        target: 'pino-pretty',
+        optons: {
+            colorize: true,
+            levelFirst: true,
+            ignore: 'hostname',
+            translateTime: true 
+        }
+    }
+}).child({ class: 'baileys'})
+
 const connectionOptions = {
   printQRInTerminal: true,
   msgRetryCounterMap,
-    logger: Pino({
-        level: 'fatal'
-    }),
   auth: {
         creds: authState.state.creds,
         keys: makeCacheableSignalKeyStore(authState.state.keys, Pino().child({
             level: 'fatal',
-            stream: 'store'
+            stream: 'fatal'
         })),
     },
+  logger: Pino({ level: 'silent' }),
   downloadHistory: false,
+  defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+  msgRetryCounterCache, // Resolve waiting messages
   version: [2, 2318, 11],
-  getMessage: async (key) => {
-        let jid = jidNormalizedUser(key.remoteJid)
-        let msg = await store.loadMessage(jid, key.id)
-        return msg?.message || ""
-    },
-	      patchMessageBeforeSending: (message) => {
-                const requiresPatch = !!(
-                    message.buttonsMessage 
-                    || message.templateMessage
-                    || message.listMessage
-                );
-                if (requiresPatch) {
-                    message = {
-                        viewOnceMessage: {
-                            message: {
-                                messageContextInfo: {
-                                    deviceListMetadataVersion: 2,
-                                    deviceListMetadata: {},
-                                },
-                                ...message,
-                            },
-                        },
-                    };
-                }
-
-                return message;
-            },
-     msgRetryCounterCache, // Resolve waiting messages
-     defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+  browser: ['Chrome (macOS)']
 }
 
 global.conn = makeWaSocket(connectionOptions)
@@ -207,47 +194,19 @@ async function connectionUpdate(update) {
         lastDisconnect,
         isNewLogin
     } = update;
-    global.stopped = connection;
     if (isNewLogin) conn.isInit = true;
     const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
     if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
         conn.logger.info(await global.reloadHandler(true).catch(console.error));
     }
-  // console.log(JSON.stringify(update, null, 4))
-  if (global.db.data == null) loadDatabase()
-    if (connection === "open") {
-        const {
-            jid,
-            name
-        } = conn.user;
-        const currentTime = new Date();
-        const pingStart = new Date();
-        const infoMsg = `
-   ℹ️ *Bot Info:*
-   
-   🕒 here and now: ${currentTime}
-   👤 Name: ${name || 'zoro md'}
-   🏷️ Tag: @${jid.split('@')[0]}
-   ⏱️ Speed ping: ${pingStart - new Date()}ms
-   📅 Date: ${currentTime.toDateString()}
-   🕰️ hour: ${currentTime.toLocaleTimeString()}
-   📅 Day: ${currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
-   📝 Description: *Bot ${name || 'zoromd'} activated*.
-        `;
-        conn.sendMessage(nomorown + "@s.whatsapp.net", {
-            text: infoMsg,
-            mentions: [nomorown + "@s.whatsapp.net", jid]
-        }, {
-            quoted: null
-        })
-        chalk.yellow('R E A D Y');
-    }
     if (connection == 'close') {
         console.log(chalk.yellow(`🚩ㅤConnection closed, please delete the folder sessions and rescan the QR code`));
     }
+     if (global.db.data == null) loadDatabase();
+    if (connection == 'open') console.log('- opened connection -');
 }
 
-process.on('uncaughtException', console.error)
+process.on('uncaughtException', console.error);
 // let strQuot = /(["'])(?:(?=(\\?))\2.)*?\1/
 
 let isInit = true;
@@ -394,15 +353,6 @@ async function _quickTest() {
     };
     Object.freeze(global.support);
 }
-setInterval(async () => {
-    if (stopped === 'close' || !conn || !conn.user) return;
-    await clearTmp();
-    console.log(chalk.cyanBright(
-        `\n╭───────────────────────────────────···\n│\n` +
-        `│  Storage Setting Successful ✅\n│\n` +
-        `╰──────────────────────────────────────···\n`
-    ));
-}, 60 * 60 * 1000);
 
 function clockString(ms) {
     const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
