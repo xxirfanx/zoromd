@@ -52,7 +52,7 @@ const {
 
 const { CONNECTING } = ws
 const { chain } = lodash
-const PORT = process.env.PORT || process.env.SERVER_PORT || 8080
+const PORT = process.env.PORT || process.env.SERVER_PORT || 27257
 
 const singleToMulti = process.argv.includes("--singleauth")
 
@@ -152,6 +152,10 @@ const connectionOptions = {
             stream: 'fatal'
         })),
     },
+    getMessage: async key => {
+    		const messageData = await store.loadMessage(key.remoteJid, key.id);
+    		return messageData?.message || undefined;
+	},
   logger: Pino({ level: 'silent' }),
   downloadHistory: false,
   defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
@@ -189,21 +193,20 @@ function clearTmp() {
 }
 
 async function connectionUpdate(update) {
-    const {
-        connection,
-        lastDisconnect,
-        isNewLogin
-    } = update;
-    if (isNewLogin) conn.isInit = true;
-    const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
-    if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
-        conn.logger.info(await global.reloadHandler(true).catch(console.error));
-    }
-    if (connection == 'close') {
-        console.log(chalk.yellow(`🚩ㅤConnection closed, please delete the folder sessions and rescan the QR code`));
-    }
-     if (global.db.data == null) loadDatabase();
-    if (connection == 'open') console.log('- opened connection -');
+  const { receivedPendingNotifications, connection, lastDisconnect, isOnline, isNewLogin } = update
+  if (isNewLogin) conn.isInit = true
+  if (connection == 'connecting') console.log(chalk.redBright('⚡ Activating Bot, Please wait a moment...'))
+  if (connection == 'open') console.log(chalk.green('✅ Connected'))
+  if (isOnline == true) console.log(chalk.green('Active Status'))
+  if (isOnline == false) console.log(chalk.red('Dead Status'))
+  if (receivedPendingNotifications) console.log(chalk.yellow('Waiting for New Messages'))
+  if (connection == 'close') console.log(chalk.red('⏱️ lost connection & tried to reconnect...'))
+  global.timestamp.connect = new Date
+  if (lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut && conn.ws.readyState !== ws.default.CONNECTING) {
+    console.log(global.reloadHandler(true))
+  }
+  console.log(JSON.stringify(update, null, 2))
+  if (global.db.data == null) await global.loadDatabase()
 }
 
 process.on('uncaughtException', console.error);
