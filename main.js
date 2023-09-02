@@ -34,27 +34,20 @@ import {
     serialize
 } from './lib/simple.js';
 import { Low } from 'lowdb';
-import single2multi from './lib/single2multi.js';
-import storeSystem from './lib/store-multi.js';
-import Helper from './lib/helper.js';
+import store from './lib/store.js';
 import { JSONFile } from "lowdb/node"
 /* import {
   mongoDB,
   mongoDBV2
 } from './lib/mongoDB.js' */
+const {proto} = (await import('@adiwajshing/baileys')).default;
 const {
-	useMultiFileAuthState,
-  makeCacheableSignalKeyStore,
-  makeInMemoryStore,
-  // useSingleFileAuthState,
-  DisconnectReason
+	DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, makeCacheableSignalKeyStore
 } = await import('@adiwajshing/baileys')
 
 const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 27257
-
-const singleToMulti = process.argv.includes("--singleauth")
 
 protoType()
 serialize()
@@ -100,35 +93,10 @@ loadDatabase()
 global.authFile = `sessions`;
 
 const msgRetryCounterCache = new NodeCache()
-const msgRetryCounterMap = (MessageRetryMap) => {};
+const msgRetryCounterMap = (MessageRetryMap) => { };
 
-var authFolder = storeSystem.fixFileName(`${Helper.opts._[0] || ''}sessions`)
-var authFile = `${Helper.opts._[0] || 'session'}.data.json`
-
-var [
-	isCredsExist,
-	isAuthSingleFileExist,
-	authState
-] = await Promise.all([
-	Helper.checkFileExists(authFolder + '/creds.json'),
-	Helper.checkFileExists(authFile),
-	storeSystem.useMultiFileAuthState(authFolder)
-])
-
-var store = storeSystem.makeInMemoryStore()
-
-// Convert single auth to multi auth
-if (Helper.opts['singleauth'] || Helper.opts['singleauthstate']) {
-    if (!isCredsExist && isAuthSingleFileExist) {
-        console.debug(chalk.blue('- singleauth -'), chalk.yellow('creds.json not found'), chalk.green('compiling singleauth to multiauth...'));
-        await single2multi(authFile, authFolder, authState);
-        console.debug(chalk.blue('- singleauth -'), chalk.green('compiled successfully'));
-        authState = await storeSystem.useMultiFileAuthState(authFolder);
-    } else if (!isAuthSingleFileExist) console.error(chalk.blue('- singleauth -'), chalk.red('singleauth file not found'));
-}
-
-var storeFile = `${Helper.opts._[0] || 'data'}.store.json`
-store.readFromFile(storeFile)
+const { state, saveState, saveCreds } = await useMultiFileAuthState(global.authFile);
+const { version } = await fetchLatestBaileysVersion();
 
 const logger = Pino({
     transport: {
@@ -144,25 +112,31 @@ const logger = Pino({
 
 const connectionOptions = {
   printQRInTerminal: true,
+  patchMessageBeforeSending: (message) => {
+    const requiresPatch = !!( message.buttonsMessage || message.templateMessage || message.listMessage );
+    if (requiresPatch) {
+      message = {viewOnceMessage: {message: {messageContextInfo: {deviceListMetadataVersion: 2, deviceListMetadata: {}}, ...message}}};
+    }
+    return message;
+  },
+  getMessage: async (key) => {
+    if (store) {
+      const msg = await store.loadMessage(key.remoteJid, key.id);
+      return conn.chats[key.remoteJid] && conn.chats[key.remoteJid].messages[key.id] ? conn.chats[key.remoteJid].messages[key.id].message : undefined;
+    }
+    return proto.Message.fromObject({});
+  },
   msgRetryCounterMap,
+  logger: Pino({level: 'silent'}),
   auth: {
-        creds: authState.state.creds,
-        keys: makeCacheableSignalKeyStore(authState.state.keys, Pino().child({
-            level: 'fatal',
-            stream: 'fatal'
-        })),
-    },
-    getMessage: async key => {
-    		const messageData = await store.loadMessage(key.remoteJid, key.id);
-    		return messageData?.message || undefined;
-	},
-  logger: Pino({ level: 'silent' }),
+    creds: state.creds,
+    keys: makeCacheableSignalKeyStore(state.keys, Pino({level: 'silent'})),
+  },
+  browser: ['Chrome (macOS)'],
+  version,
   downloadHistory: false,
-  defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
-  msgRetryCounterCache, // Resolve waiting messages
-  version: [2, 2318, 11],
-  browser: ['Chrome (macOS)']
-}
+  defaultQueryTimeoutMs: undefined,
+};
 
 global.conn = makeWaSocket(connectionOptions)
 conn.isInit = false
@@ -170,6 +144,7 @@ conn.isInit = false
 conn.logger.info(`W A I T I N G\n`);
 
 if (!opts['test']) {
+    (await import('./server.js')).default(PORT)
     if (global.db) {
         setInterval(async () => {
             if (global.db.data) await global.db.write().catch(console.error)
@@ -178,8 +153,6 @@ if (!opts['test']) {
         }, 30 * 1000);
     }
 }
-
-if (opts['server'])(await import('./server.js')).default(global.conn, PORT);
 
 function clearTmp() {
     const tmp = [tmpdir(), join(__dirname, './tmp')];
@@ -253,7 +226,7 @@ global.reloadHandler = async function(restatConn) {
   conn.onDelete = handler.deleteUpdate.bind(global.conn);
   conn.presenceUpdate = handler.presenceUpdate.bind(global.conn);
   conn.connectionUpdate = connectionUpdate.bind(global.conn);
-  conn.credsUpdate = authState.saveCreds.bind(global.conn);
+  conn.credsUpdate = saveCreds.bind(global.conn);
 
   const currentDateTime = new Date();
     const messageDateTime = new Date(conn.ev);
