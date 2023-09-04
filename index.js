@@ -10,11 +10,11 @@ import { createInterface } from 'readline';
 import yargs from 'yargs';
 
 // https://stackoverflow.com/a/50052194
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(__dirname);
 const args = [join(__dirname, 'main.js'), ...process.argv.slice(2)];
 const opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 const rl = createInterface(process.stdin, process.stdout);
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(__dirname);
 const { name, author } = require(join(__dirname, './package.json'));
 const { say } = cfonts;
 
