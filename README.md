@@ -22,7 +22,6 @@
  
  <a href='https://github.com/xxirfanx/zoromd/fork' target="_blank"><img alt='Fork repo' src='https://img.shields.io/badge/fork repo-000?style=for-the-badge&logo=github&logoColor=white'/></a>
 
-[![Run on heroku](https://img.shields.io/badge/%E2%86%91_Deploy_to-Heroku-7056bf.svg?style=flat)](https://heroku.com/deploy?template=https://github.com/xxirfanx/zoromd)
 
 ### Deploy to Replit
 [![Run on Repl.it](https://repl.it/badge/github/xxirfanx/zoromd)](https://repl.it/github/xxirfanx/zoromd)
