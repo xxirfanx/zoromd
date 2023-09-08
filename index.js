@@ -1,32 +1,56 @@
-import { spawn } from "child_process"; import { join, dirname } from 'path'; import cfonts from 'cfonts'; import { fileURLToPath } from 'url'; import { createRequire } from 'module';
+console.log('Starting Bot...')
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(__dirname);
+import yargs from 'yargs'; import cfonts from 'cfonts'; import { fileURLToPath } from 'url'; import { join, dirname } from 'path'; import { createRequire } from 'module'; import { createInterface } from 'readline'; import { setupMaster, fork } from 'cluster'; import { watchFile, unwatchFile } from 'fs';
 
-function start() {
-	let args = [join(__dirname, 'main.js'), ...process.argv.slice(2)]
-	let p = spawn(process.argv[0], args, { stdio: ['inherit', 'inherit', 'inherit', 'ipc'] })
-	.on('message', data => {
-		if (data == 'reset') {
-			console.log('Restarting...')
-			p.kill()
-        }
-            if (data == 'uptime') {
-                p.send(p.uptime());
-            }
-	})
-	.on('exit', code => {
-		console.error('Exited with code:', code)
-		start()
-	})
+// https://stackoverflow.com/a/50052194
+const { say } = cfonts
+const rl = createInterface(process.stdin, process.stdout)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const require = createRequire(__dirname)
+
+say('Lightweight\nWhatsApp Bot MD', { font: 'chrome', align: 'center', gradient: ['red', 'magenta'] })
+say('Bot created by lua sakura', { font: 'console', align: 'center', gradient: ['red', 'magenta'] })
+
+var isRunning = false
+/**
+ * Start a js file
+ * @param {String} file `path/to/file`
+ */
+function start(file) {
+  if (isRunning) return
+  isRunning = true
+  let args = [join(__dirname, file), ...process.argv.slice(2)]
+  say([process.argv[0], ...args].join(' '), { font: 'console', align: 'center', gradient: ['red', 'magenta'] })
+  setupMaster({ exec: args[0], args: args.slice(1) })
+  let p = fork()
+  p.on('message', data => {
+    console.log('[✅RECEIVED]', data)
+    switch (data) {
+      case 'reset':
+        p.process.kill()
+        isRunning = false
+        start.apply(this, arguments)
+        break
+      case 'uptime':
+        p.send(process.uptime())
+        break
+    }
+  })
+  p.on('exit', (_, code) => {
+    isRunning = false
+    console.error('Exited with code:', code)
+    if (code !== 0) return start(file)
+    watchFile(args[0], () => {
+      unwatchFile(args[0])
+      start(file)
+    })
+  })
+  let opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
+  if (!opts['test'])
+    if (!rl.listenerCount()) rl.on('line', line => {
+      p.emit('message', line.trim())
+    })
+  // console.log(p)
 }
 
-cfonts.say('Lightweight\nWhatsApp Bot MD', {
-   font: 'chrome', // define the font face
-    align: 'center', // define text alignment
-    gradient: ['red', 'magenta'] // define all colors
-}), cfonts.say('Bot created by lua sakura', {
-   colors: ['system'],
-   font: 'console',
-   align: 'center'
-}), start()
+start('main.js')
