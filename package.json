@@ -50,7 +50,7 @@
         "@vitalets/google-translate-api": "^9.2.0",
         "@xct007/frieren-scraper": "github:xct007/frieren-scraper",
         "acrcloud": "^1.4.0",
-        "api-dylux": "^1.5.5",
+        "api-dylux": "^1.6.9",
         "awesome-phonenumber": "^5.10.0",
         "axios": "^1.4.0",
         "booru": "^2.6.3",
