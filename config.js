@@ -14,7 +14,7 @@ global.prems = [] // Premium user has unlimited limit
 
 // api key here okay
 global.xyro = 'LyrK9JMI7N' // https://api.xyroinee.xyz free limit unlimited
-global.apilol = 'BrunoSobrino_2' // https://api.lolhuman.xyz free limit unlimited by @BrunoSobrino
+global.apilol = 'GataDios' // https://api.lolhuman.xyz free limit unlimited by @BrunoSobrino
 
 global.APIs = { // API Prefix
   // name: 'https://website'
