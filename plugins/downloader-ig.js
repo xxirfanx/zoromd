@@ -1,16 +1,12 @@
-import { instagram } from '@xct007/frieren-scraper';
 import fetch from 'node-fetch';
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-    if (!args[0]) throw `Use example ${usedPrefix}${command} https://www.instagram.com/p/ByxKbUSnubS/?utm_source=ig_web_copy_link`
+    if (!args[0]) throw `Use example ${usedPrefix}${command} link`
     await m.reply(`Ｌｏａｄｉｎｇ．．．`)
-    let res = await instagram(args[0])
-    if (res.error) return m.reply(`${res.message}`);
-    for (let urRRl of res) {
-    let shortUrRRl = await (await fetch(`https://tinyurl.com/api-create.php?url=${urRRl.url}`)).text()    
-    let tXXxt = `✨ *done here | URL:* ${shortUrRRl}\n\n${me}`.trim()
-    conn.sendFile(m.chat, urRRl.url, 'error.mp4', tXXxt, m)
-   }
+    let tes = await fetch(`https://inrl-web.onrender.com/api/insta?url=${args[0]}`);
+            const json = await tes.json();
+            const videoig = json.result;
+            await conn.sendFile(m.chat, videoig, 'error.mp4', '❤️ done here', m);
 }
 
 handler.help = ['ig'].map(v => v + ' <url>')
