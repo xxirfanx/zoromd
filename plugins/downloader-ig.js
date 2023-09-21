@@ -5,8 +5,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     await m.reply(`Ｌｏａｄｉｎｇ．．．`)
     let tes = await fetch(`https://inrl-web.onrender.com/api/insta?url=${args[0]}`);
             const json = await tes.json();
-            const videoig = json.result;
-            await conn.sendFile(m.chat, videoig, 'error.mp4', '❤️ done here', m);
+            const igdl = json.result;
+            await conn.sendFile(m.chat, igdl, 'error.mp4', '❤️ done here', m);
 }
 
 handler.help = ['ig'].map(v => v + ' <url>')
