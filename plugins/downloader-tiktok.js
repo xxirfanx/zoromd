@@ -1,68 +1,32 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
+import fg from 'api-dylux' 
+import { tiktokdl } from '@bochilteam/scraper'
 
-var handler = async (m, { conn, args }) => {
-  if (!args[0]) {
-    throw 'Uhm... where the URL?';
-  }
-
-  try {
-    await conn.reply(m.chat, 'Wait a minute sis, the video is being downloaded...', m);
-
-    const { thumbnail, video, audio } = await tiktokdl(args[0]);
-    const url = video;
-
-    if (!url) {
-      throw 'Can\'t download video!';
-    }
-
-    await conn.sendMessage(m.chat, { video: { url: url } }, m);
-    await conn.reply(m.chat, 'Here the video', m);
-  } catch (error) {
-    conn.reply(m.chat, `Error : ${error}`, m);
-  }
-};
+let handler = async (m, { conn, text, args, usedPrefix, command}) => {
+if (!args[0]) throw `Enter the link of the video Tiktok`
+if (!args[0].match(/tiktok/gi)) throw `Verify that the link is from tiktok`
+let old = new Date()
+let text = `∘  *Fetching* : ${((new Date - old) * 1)} ms`
+conn.reply(m.chat, global.wait, m, {
+contextInfo: { externalAdReply :{ mediaUrl: null, mediaType: 1, description: null, 
+title: '📤| downloads By Zoro md 🌸',
+body: me,
+previewType: 0, thumbnail: thumb2, jpegThumbnail: thumb,
+sourceUrl: 'https://github.com/xxirfanx' }}})
+try {
+let p = await fg.tiktok(args[0]) 
+conn.sendFile(m.chat, p.play, 'tiktok.mp4', text, m)
+} catch {  	
+try { 
+const { author: { nickname }, video, description } = await tiktokdl(args[0])
+const url = video.no_watermark2 || video.no_watermark || 'https://tikcdn.net' + video.no_watermark_raw || video.no_watermark_hd
+if (!url) throw global.eror
+conn.sendFile(m.chat, url, 'fb.mp4', ``, m)
+} catch {
+m.reply('*☓ An unexpected error occurred*')
+}}}
 
 handler.help = ['tiktok'].map((v) => v + ' <url>');
 handler.tags = ['downloader'];
 handler.command = /^t(t|iktok(d(own(load(er)?)?|l))?|td(own(load(er)?)?|l))$/i;
 
-export default handler;
-
-async function tiktokdl(url) {
-  if (!/tiktok/.test(url)) {
-    throw 'Invalid TikTok URL!';
-  }
-
-  const gettoken = await axios.get('https://tikdown.org/id');
-  const $ = cheerio.load(gettoken.data);
-  const token = $('#download-form > input[type=hidden]:nth-child(2)').attr('value');
-  const param = {
-    url: url,
-    _token: token,
-  };
-
-  const { data } = await axios.request('https://tikdown.org/getAjax?', {
-    method: 'post',
-    data: new URLSearchParams(Object.entries(param)),
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.115',
-    },
-  });
-
-  var getdata = cheerio.load(data.html);
-
-  if (data.status) {
-    return {
-      status: true,
-      thumbnail: getdata('img').attr('src'),
-      video: getdata('div.download-links > div:nth-child(1) > a').attr('href'),
-      audio: getdata('div.download-links > div:nth-child(2) > a').attr('href'),
-    };
-  } else {
-    return {
-      status: false,
-    };
-  }
-}
+export default handler
