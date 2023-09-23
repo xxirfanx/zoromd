@@ -391,37 +391,43 @@ export async function participantsUpdate({
     const chat = global.db.data.chats[id] || {};
     const emoji = {
         promote: '👤👑',
-        demote: '👤🙅‍♂️',
-        welcome: '👋',
-        bye: '👋',
-        bug: '🐛',
-        mail: '📮',
-        owner: '👑'
+        demote: '👤🙅‍♂️'
     };
 
-    let res = await fetch("https://dummyjson.com/quotes/random");
-    let res1 = await res.json();
-
+    let text = ''
     switch (action) {
-        case "add":
-        case "remove":
+            case 'add':
+            case 'remove':
             if (chat.welcome) {
-                const groupMetadata = await this.groupMetadata(id) || (this.chats[id] || {}).metadata;
+                let groupMetadata = await this.groupMetadata(id) || (conn.chats[id] || {}).metadata
                 for (let user of participants) {
-                    const isAddAction = action === "add";
-                    const welcomeText = isAddAction ? (chat.sWelcome || this.welcome || conn.welcome || `${emoji.welcome} Selamat datang, @user!`).replace("@subject", await this.getName(id)).replace("@desc", groupMetadata.desc?.toString() || "not known") :
-                        (chat.sBye || this.bye || conn.bye || `${emoji.bye} Until found, @user!`);
+						let pp = 'https://telegra.ph/file/24fa902ead26340f3df2c.png'
+						let gcname = groupMetadata.subject
+						try {
+							pp = await this.profilePictureUrl(user, 'image')
+							ppgc = await this.profilePictureUrl(id, 'image') 
+						} catch (e) {} finally {
+							text = (action === 'add' ? (chat.sWelcome || this.welcome || conn.welcome || 'Welcome, @user!').replace('@subject', await this.getName(id)).replace('@desc', groupMetadata.desc ? String.fromCharCode(8206).repeat(4001) + groupMetadata.desc : '') :
+								(chat.sBye || this.bye || conn.bye || 'Bye, @user!')).replace(/@user/g, '@' + user.split`@`[0])
+							let wel = pp
+							let lea = pp
+						    this.sendMessage(id, {
+text: text,
+contextInfo: {
+mentionedJid: [user],
+externalAdReply: {
+title: "© Zoro MD",
+body: "Group Notifications",
+thumbnailUrl: pp,
+sourceUrl: 'https://whatsapp.com/channel/0029Va4gIsn3WHTcFh97VU3s',
+mediaType: 1,
+renderLargerThumbnail: true
+}}})
+                        }
 
-                    const welran = await WelcomeLeave(await this.profilePictureUrl(user, "image").catch(() => hwaifu.getRandom()), await this.getName(user), `${res1.quote}`);
-                    const byeran = await WelcomeLeave(await this.profilePictureUrl(id, "image").catch(() => hwaifu.getRandom()), await this.getName(id), `${res1.quote}`);
-
-                    const lapor = `\n\n${emoji.mail} *Message:* If you find bugs, errors, or difficulties in use, please report/ask ${emoji.owner}`;
-                    await this.sendFile(id, isAddAction ? welran : byeran, '', welcomeText.replace("@user", "@" + participants[0].split("@")[0]) + lapor, null, null, {
-                        mentions: [participants[0]]
-                    });
-                }
+					}
             }
-            break;
+	break;
         case "promote":
             const promoteText = (chat.sPromote || this.spromote || conn.spromote || `${emoji.promote} @user *has been appointed as Admin*`).replace("@user", "@" + participants[0].split("@")[0]);
             if (chat.detect) {
