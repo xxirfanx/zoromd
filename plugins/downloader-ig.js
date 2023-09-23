@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-    if (!args[0]) throw `Use example ${usedPrefix}${command} link`
-    await m.reply(`Ｌｏａｄｉｎｇ．．．`)
+    if (!/https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)/i.test(args[0])) throw m.reply(`Use example ${usedPrefix}${command} link`);
+    await m.reply(`Ｌｏａｄｉｎｇ．．．`);
     let tes = await fetch(`https://inrl-web.onrender.com/api/insta?url=${args[0]}`);
             const json = await tes.json();
             const igdl = json.result;
