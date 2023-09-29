@@ -6,8 +6,8 @@ global.owner =
  [
   ['+91 6235 050 956', '𝖑𝖚𝖆 𝖘𝖊𝖗 𝖔𝖋𝖈', true]
 ]
-// Put your number here
-// [number, he creator/owner?, he developer?]
+// +918638238336
+// [+918638238336,𝞒𝙔𝙐𝞗𝞙𝞘𝞘𝞜]
 
 global.mods = [] // Want some help?
 global.prems = [] // Premium user has unlimited limit
