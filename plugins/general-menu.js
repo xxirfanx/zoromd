@@ -10,7 +10,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 let tags = {}
 const defaultMenu = {
   before: `
-*_乂 Simple WhatsApp - bot [ beta ✔ ]_*
+*_乂 ZORO MD - bot_*
 
 
 *_あ Library : [ Baileys-MD ]_*
@@ -30,7 +30,7 @@ const defaultMenu = {
   try {
     let name = m.pushName || conn.getName(m.sender)
     let d = new Date(new Date + 3600000)
-    let locale = 'id'
+    let locale = 'en'
     // d.getTimeZoneOffset()
     // Offset -420 is 18.00
     // Offset    0 is  0.00
@@ -144,9 +144,10 @@ let ppl = await( await conn.profilePictureUrl(m.sender, 'image').catch(() => 'ht
       externalAdReply: {
       showAdAttribution: true
       }}}}}}, {})*/
- let fkon = { key: { fromMe: false, participant: `${m.sender.split`@`[0]}@s.whatsapp.net`, ...(m.chat ? { remoteJid: '16504228206@s.whatsapp.net' } : {}) }, message: { contactMessage: { displayName: `${name}`, vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:${name}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`}}}
-let fotonya = 'https://telegra.ph/file/d43f196dc3417ca4c5338.jpg'
- conn.sendMessage(m.chat, { image: { url: fotonya  }, caption: text.trim()}, { quoted: fkon })
+ //let fkon = { key: { fromMe: false, participant: `${m.sender.split`@`[0]}@s.whatsapp.net`, ...(m.chat ? { remoteJid: '16504228206@s.whatsapp.net' } : {}) }, message: { contactMessage: { displayName: `${name}`, vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:${name}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`}}}
+//let fotonya = 'https://telegra.ph/file/d43f196dc3417ca4c5338.jpg'
+// conn.sendMessage(m.chat, { image: { url: fotonya  }, caption: text.trim()}, { quoted: fkon })
+      await conn.sendMessage(m.chat, { text: text.trim(), contextInfo: { externalAdReply: { title: conn.user.name, body: '', thumbnailUrl: ppb, sourceUrl: "https://whatsapp.com/channel/0029Va4gIsn3WHTcFh97VU3s", mediaType: 1, renderLargerThumbnail: true }}})
   } catch (e) {
     m.reply('An error occurred')
     m.reply(e)
