@@ -1,205 +1,99 @@
-import {
-    cpus as _cpus,
-    totalmem,
-    freemem
-} from 'os'
-import util from 'util'
+import { cpus as _cpus, totalmem, freemem } from 'os'
 import os from 'os'
 import osu from 'node-os-utils'
-import fetch from 'node-fetch'
-import {
-    performance
-} from 'perf_hooks'
-import {
-    sizeFormatter
-} from 'human-readable'
+import { sizeFormatter } from 'human-readable'
+
 let format = sizeFormatter({
-    std: 'JEDEC', // 'SI' (default) | 'IEC' | 'JEDEC'
-    decimalPlaces: 2,
-    keepTrailingZeroes: false,
-    render: (literal, symbol) => `${literal} ${symbol}B`,
+	std: 'JEDEC', // 'SI' (default) | 'IEC' | 'JEDEC'
+	decimalPlaces: 2,
+	keepTrailingZeroes: false,
+	render: (literal, symbol) => `${literal} ${symbol}B`,
 })
-let handler = async (m, {
-    conn,
-    isRowner
-}) => {
-    let _muptime
-    if (process.send) {
-        process.send('uptime')
-        _muptime = await new Promise(resolve => {
-            process.once('message', resolve)
-            setTimeout(resolve, 1000)
-        }) * 1000
-    }
-    let muptime = clockString(_muptime)
-    const chats = Object.entries(conn.chats).filter(([id, data]) => id && data.isChats)
-    const groupsIn = chats.filter(([id]) => id.endsWith('@g.us')) //groups.filter(v => !v.read_only)
-    const used = process.memoryUsage()
-    const cpus = _cpus().map(cpu => {
-        cpu.total = Object.keys(cpu.times).reduce((last, type) => last + cpu.times[type], 0)
-        return cpu
-    })
-    const cpu = cpus.reduce((last, cpu, _, {
-        length
-    }) => {
-        last.total += cpu.total
-        last.speed += cpu.speed / length
-        last.times.user += cpu.times.user
-        last.times.nice += cpu.times.nice
-        last.times.sys += cpu.times.sys
-        last.times.idle += cpu.times.idle
-        last.times.irq += cpu.times.irq
-        return last
-    }, {
-        speed: 0,
-        total: 0,
-        times: {
-            user: 0,
-            nice: 0,
-            sys: 0,
-            idle: 0,
-            irq: 0
-        }
-    })
+
+let handler = async (m, { conn }) => {
+	let groups
+	try { groups = Object.values(await conn.groupFetchAllParticipating()) }
+	catch { return }
+	let chats = Object.entries(conn.chats).filter(([id, data]) => id && data.isChats)
+	let groupsIn = chats.filter(([id]) => id.endsWith('@g.us'))
     let NotDetect = 'Not Detect'
+	let used = process.memoryUsage()
     let cpux = osu.cpu
     let cpuCore = cpux.count()
     let drive = osu.drive
-    let mem = osu.mem
-    let netstat = osu.netstat
-    let HostN = osu.os.hostname()
-    let OS = osu.os.platform()
-    let ipx = osu.os.ip()
-    let cpuModel = cpux.model()
+    let driveTotal, driveUsed, drivePer
     let cpuPer
     let p1 = cpux.usage().then(cpuPercentage => {
         cpuPer = cpuPercentage
     }).catch(() => {
         cpuPer = NotDetect
     })
-    let driveTotal, driveUsed, drivePer
     let p2 = drive.info().then(info => {
         driveTotal = (info.totalGb + ' GB'),
-            driveUsed = info.usedGb,
+            driveUsed = (info.usedGb + ' GB'),
             drivePer = (info.usedPercentage + '%')
     }).catch(() => {
         driveTotal = NotDetect,
             driveUsed = NotDetect,
             drivePer = NotDetect
     })
-    let ramTotal, ramUsed
-    let p3 = mem.info().then(info => {
-        ramTotal = info.totalMemMb,
-            ramUsed = info.usedMemMb
-    }).catch(() => {
-        ramTotal = NotDetect,
-            ramUsed = NotDetect
-    })
-    let netsIn, netsOut
-    let p4 = netstat.inOut().then(info => {
-        netsIn = (info.total.inputMb + ' MB'),
-            netsOut = (info.total.outputMb + ' MB')
-    }).catch(() => {
-        netsIn = NotDetect,
-            netsOut = NotDetect
-    })
-    await Promise.all([p1, p2, p3, p4])
-    let _ramTotal = (ramTotal + ' MB')
-    let cek = await (await fetch("https://api.myip.com")).json().catch(_ => 'error')
+    await Promise.all([p1, p2])
+	// Just use one core CPU
+  const cpu = _cpus()[0];
 
-    let ip = (cek == 'error' ? 'ɴᴏᴛ ᴅᴇᴛᴇᴄᴛ' : cek.ip)
-    let cr = (cek == 'error' ? 'ɴᴏᴛ ᴅᴇᴛᴇᴄᴛ' : cek.country)
-    let cc = (cek == 'error' ? 'ɴᴏᴛ ᴅᴇᴛᴇᴄᴛ' : cek.cc)
-
-    let d = new Date(new Date + 3600000)
-    let locale = 'id'
-    let weeks = d.toLocaleDateString(locale, {
-        weekday: 'long'
-    })
-    let dates = d.toLocaleDateString(locale, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })
-    let times = d.toLocaleTimeString(locale, {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
-    })
-
-    let old = performance.now()
-    let neww = performance.now()
-    let speed = neww - old
-    let str = `- *ᴘ ɪ ɴ ɢ* -
-${Math.round(neww - old)}ms
-${speed}ms
-
-- *ʀ ᴜ ɴ ᴛ ɪ ᴍ ᴇ* -
-${muptime}
-${readMore}
-- *ᴄ ʜ ᴀ ᴛ s* -
-• *${groupsIn.length}* Group Chats
-• *${groupsIn.length}* Groups Joined
-• *${groupsIn.length - groupsIn.length}* Groups Left
-• *${chats.length - groupsIn.length}* Personal Chats
-• *${chats.length}* Total Chats
-
-- *s ᴇ ʀ ᴠ ᴇ ʀ* -
-*🛑 Rᴀᴍ:* ${ramUsed} / ${_ramTotal}(${/[0-9.+/]/g.test(ramUsed) &&  /[0-9.+/]/g.test(ramTotal) ? Math.round(100 * (ramUsed / ramTotal)) + '%' : NotDetect})
-*🔵 FʀᴇᴇRᴀᴍ:* ${format(freemem())}
-
-*🔭 ᴘʟᴀᴛғᴏʀᴍ:* ${os.platform()}
-*🧿 sᴇʀᴠᴇʀ:* ${os.hostname()}
-*💻 ᴏs:* ${OS}
-*📍 ɪᴘ:* ${ip}
-*🌎 ᴄᴏᴜɴᴛʀʏ:* ${cr}
-*💬 ᴄᴏᴜɴᴛʀʏ ᴄᴏᴅᴇ:* ${cc}
-*📡 ᴄᴘᴜ ᴍᴏᴅᴇʟ:* ${cpuModel}
-*🔮 ᴄᴘᴜ ᴄᴏʀᴇ:* ${cpuCore} Core
-*🎛️ ᴄᴘᴜ:* ${cpuPer}%
-*⏰ ᴛɪᴍᴇ sᴇʀᴠᴇʀ:* ${times}
-
-- *ᴏ ᴛ ʜ ᴇ ʀ* -
-*📅 Wᴇᴇᴋꜱ:* ${weeks}
-*📆 Dᴀᴛᴇꜱ:* ${dates}
-*🔁 NᴇᴛꜱIɴ:* ${netsIn}
-*🔁 NᴇᴛꜱOᴜᴛ:* ${netsOut}
-*💿 DʀɪᴠᴇTᴏᴛᴀʟ:* ${driveTotal}
-*💿 DʀɪᴠᴇUꜱᴇᴅ:* ${driveUsed}
-*⚙️ DʀɪᴠᴇPᴇʀ:* ${drivePer}
-
-${readMore}
-*乂 ɴᴏᴅᴇJS ᴍᴇᴍᴏʀʏ ᴜsᴀɢᴇ*
-${'```' + Object.keys(used).map((key, _, arr) => `${key.padEnd(Math.max(...arr.map(v => v.length)), ' ')}: ${format(used[key])}`).join('\n') + '```'
+  let start = process.hrtime();
+  let speed;
+  let end;
+  let cpuUsage;
+  // Measures the time required to take a measurement
+  end = process.hrtime(start);
+  speed = Math.round((end[0] * 1000 + end[1] / 1000000));
+  // Calculate usage percentage CPU
+  cpuUsage = ((cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.irq) / cpu.times.idle) * 100;
+	let txt = `Speed Respon ${speed} ms second\n\n`
+	txt += `Runtime :\n*${runtime(process.uptime())}*\n`
+	txt += `OS Uptime :\n*${runtime(os.uptime())}*\n\n`
+	txt += `💬 Status :\n- *${groupsIn.length < groups.length ? groups.length : groupsIn.length}* Group Chats\n`
+	txt += `- *${groups.length}* Groups Joined\n`
+	txt += `- *${groupsIn.length < groups.length ? 0 : groupsIn.length - groups.length}* Groups Left\n`
+	txt += `- *${chats.length - groupsIn.length}* Personal Chats\n`
+	txt += `- *${chats.length - ( groupsIn.length < groups.length ? 0 : groupsIn.length - groups.length )}* Total Chats\n\n`
+	txt += `💻 *Total CPU Usage* :\n_${cpu.model.trim()} (${cpu.speed} MHZ)_\n_*Usage*: ${cpuUsage.toFixed(2)}%_\n_CPU CORE: ${cpuCore}_\n_CPU: ${cpuPer}%_\n\n`
+	txt += `📑 *SERVER ROOM* :\n🔭 _Platform: ${os.platform()}_\n`
+    txt += `🗂️ _drive Used: ${driveUsed}_\n`
+    txt += `🗃️ _drive Total: ${driveTotal}_\n`
+    txt += `🗒️ _drive Per: ${drivePer}_\n`
+     txt += `💾 _RAM: ${format(totalmem() - freemem())} / ${format(totalmem())}_\n`
+     txt += `💾 _FREE RAM: ${format(freemem())}_\n\n`
+     txt += `*NodeJS Memory Usage*:\n${'```' +
+    Object.keys(used)
+      .map(
+        (key, _, arr) =>
+          `${key.padEnd(Math.max(...arr.map((v) => v.length)), ' ')}: ${format(
+            used[key]
+          )}`
+      )
+      .join('\n') +
+    '```'
+    }`
+	await m.reply(txt)
 }
-`
-  let pesan = {
-    text: wait,
-    mentions: [m.sender],
-    contextInfo: {
-      forwardingScore: 256,
-      isForwarded: true
-    }
-  };
-  
-let { key } = await conn.sendMessage(m.chat, pesan, { quoted: m });
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  await conn.sendMessage(m.chat, { text: str, edit: key }, { quoted: m });
 
-}
 handler.help = ['ping', 'speed']
 handler.tags = ['info', 'tools']
+handler.command = /^(ping|speed|info)$/
 
-handler.command = /^(ping|speed|info)$/i
 export default handler
 
-const more = String.fromCharCode(8206)
-const readMore = more.repeat(4001)
-
-function clockString(ms) {
-  let d = isNaN(ms) ? '--' : Math.floor(ms / 86400000)
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [d, ' *Days ☀️*\n ', h, ' *Hours 🕐*\n ', m, ' *Minute ⏰*\n ', s, ' *Second ⏱️* '].map(v => v.toString().padStart(2, 0)).join('')
+function runtime(seconds) {
+	seconds = Number(seconds);
+	var d = Math.floor(seconds / (3600 * 24));
+	var h = Math.floor(seconds % (3600 * 24) / 3600);
+	var m = Math.floor(seconds % 3600 / 60);
+	var s = Math.floor(seconds % 60);
+	var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+	var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+	var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+	var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+	return dDisplay + hDisplay + mDisplay + sDisplay;
 }
