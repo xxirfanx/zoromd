@@ -130,8 +130,7 @@ export async function handler(chatUpdate) {
         
         if (m.isBaileys || m.chat === 'status@broadcast') 
         return
-        if (m.isBaileys && m.fromMe)
-			  return
+        if (m.isBaileys) return
         m.exp += Math.ceil(Math.random() * 10)
         let usedPrefix
         let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
