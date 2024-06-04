@@ -1,5 +1,3 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 import './config.js'
 
 import path, { join } from 'path'
@@ -42,7 +40,7 @@ import { JSONFile } from "lowdb/node"
 } from './lib/mongoDB.js' */
 const {proto} = (await import('@adiwajshing/baileys')).default;
 const {
-	DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, makeCacheableSignalKeyStore
+	DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore
 } = await import('@adiwajshing/baileys')
 
 const { CONNECTING } = ws
@@ -132,7 +130,7 @@ const connectionOptions = {
     creds: state.creds,
     keys: makeCacheableSignalKeyStore(state.keys, Pino({level: 'silent'})),
   },
-  browser: ['Chrome (macOS)'],
+  browser: Browsers.ubuntu('Chrome'), // by lua fixed
   version,
   downloadHistory: false,
   defaultQueryTimeoutMs: undefined,
