@@ -1,17 +1,33 @@
+/** 
+ *  Created By LUA SER OFC
+ *  CopyRight 2024 MIT License
+ *  My Github : https://github.com/xxirfanx
+ *  My Instagram : https://instagram.com/luaserofc
+ *  My Youtube : https://youtube.com/@luaserofc
+*/
+
+const ig = await import('@sasmeee/igdl');
 import fetch from 'node-fetch';
 
-let handler = async (m, { conn, args, usedPrefix, command }) => {
-    if (!/https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)/i.test(args[0])) throw m.reply(`Use example ${usedPrefix}${command} link`);
-    await m.reply(`Ｌｏａｄｉｎｇ．．．`);
-    let tes = await fetch(`https://inrl-web.onrender.com/api/insta?url=${args[0]}`);
-            const json = await tes.json();
-            const igdl = json.result;
-            await conn.sendFile(m.chat, igdl, 'error.mp4', '❤️ done here', m);
-}
+var handler = async (m, { args, conn, usedPrefix, command }) => {
+    if (!args[0]) throw `Ex:\n${usedPrefix}${command} Link put`;
 
-handler.help = ['ig'].map(v => v + ' <url>')
-handler.tags = ['downloader']
+  conn.reply(m.chat, 'Currently downloading video...', m);
 
-handler.command = /^(ig(dl)?|insta|instagram(dl)?)$/i
+   let res = await ig.default(args[0]);
+   let media = await res[0].download_link;
 
-export default handler
+   const response = await fetch(media)
+   const arrayBuffer = await response.arrayBuffer()
+   const videoBuffer = Buffer.from(arrayBuffer)
+
+        if (!res) throw 'Can\'t download the post';
+
+  conn.sendFile(m.chat, videoBuffer, 'ig.mp4', null, m)
+};
+
+handler.help = ['instagram'];
+handler.tags = ['downloader'];
+handler.command = /^(ig(dl)?|instagram(dl)?|insta)$/i;
+
+export default handler;
