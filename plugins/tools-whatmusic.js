@@ -1,29 +1,44 @@
+/** 
+ *  Created By LUA SER OFC
+ *  CopyRight 2024 MIT License
+ *  My Github : https://github.com/xxirfanx
+ *  My Instagram : https://instagram.com/luaserofc
+ *  My Youtube : https://youtube.com/@luaserofc
+*/
+
+import fs from 'fs'
 import acrcloud from 'acrcloud'
 let acr = new acrcloud({
-	host: 'identify-eu-west-1.acrcloud.com',
-	access_key: 'f692756eebf6326010ab8694246d80e7',
-	access_secret: 'm2KQYmHdBCthmD7sOTtBExB9089TL7hiAazcUEmb'
+host: 'identify-eu-west-1.acrcloud.com',
+access_key: 'c33c767d683f78bd17d4bd4991955d81',
+access_secret: 'bvgaIAEtADBTbLwiPGYlxupWqkNGIjT7J9Ag2vIu'
 })
 
-let handler = async (m, { conn, usedPrefix, command }) => {
-	let q = m.quoted ? m.quoted : m
-	let mime = (q.msg || q).mimetype || q.mediaType || ''
-	if (/video|audio/.test(mime)) {
-		let buffer = await q.download()
-		await m.reply('_In progress, please wait..._')
-		let { status, metadata } = await acr.identify(buffer)
-		if (status.code !== 0) throw status.msg 
-		let { title, artists, album, genres, release_date } = metadata.music[0]
-		let txt = `*• Title:* ${title}${artists ? `\n*• Artists:* ${artists.map(v => v.name).join(', ')}` : ''}`
-		txt += `${album ? `\n*• Album:* ${album.name}` : ''}${genres ? `\n*• Genres:* ${genres.map(v => v.name).join(', ')}` : ''}\n`
-		txt += `*• Release Date:* ${release_date}`
-    conn.sendMessage(m.chat, { text: txt.trim(), buttons: [{ buttonText: { displayText: 'Play Music' }, buttonId: `${usedPrefix}play ${title}` }] }, { quoted: m })
-		// m.reply(txt.trim())
-	} else throw `Reply audio/video with command ${usedPrefix + command}`
+let handler = async (m) => {
+let q = m.quoted ? m.quoted : m
+let mime = (q.msg || q).mimetype || ''
+if (/audio|video/.test(mime)) {
+let media = await q.download()
+let ext = mime.split('/')[1]
+fs.writeFileSync(`./tmp/${m.sender}.${ext}`, media)
+let res = await acr.identify(fs.readFileSync(`./tmp/${m.sender}.${ext}`))
+let { code, msg } = res.status
+if (code !== 0) throw msg
+let { title, artists, album, genres, release_date } = res.metadata.music[0]
+let txt = `
+RESULT
+• 📌 *TITLE*: ${title}
+• 👨‍🎤 ARTIST: ${artists !== undefined ? artists.map(v => v.name).join(', ') : 'NOT FOUND'}
+• 💾 ALBUM: ${album.name || 'NOT FOUND'}
+• 🌐 GENER: ${genres !== undefined ? genres.map(v => v.name).join(', ') : 'NOT FOUND'}
+• 📆 RELEASE DATE: ${release_date || 'NOT FOUND'}
+`.trim()
+fs.unlinkSync(`./tmp/${m.sender}.${ext}`)
+m.reply(txt)
+} else throw 'Reply audio/video'
 }
-handler.help = handler.alias = ['whatmusic']
+
+handler.help = ['find']
 handler.tags = ['tools']
-handler.command = /^(whatmusic)$/i
-
+handler.command = /^whatmusic|find$/i
 export default handler
-
