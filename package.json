@@ -1,6 +1,6 @@
 {
     "name": "zoromd",
-    "version": "4.8.0",
+    "version": "4.9.0",
     "description": "Simple WhatsApp Bot MD With ESM Module",
     "main": "index.js",
     "type": "module",
@@ -47,6 +47,7 @@
         "@adiwajshing/baileys": "npm:@whiskeysockets/baileys",
         "@bochilteam/scraper": "4.0.22-alpha.0",
         "@bochilteam/scraper-sosmed": "^1.0.5",
+        "@sasmeee/igdl": "^1.0.0",
         "@vitalets/google-translate-api": "^9.2.0",
         "acrcloud": "^1.4.0",
         "api-dylux": "^1.6.9",
