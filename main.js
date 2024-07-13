@@ -22,6 +22,7 @@ import lodash from 'lodash'
 import syntaxerror from 'syntax-error'
 import { tmpdir } from 'os'
 import Pino from "pino"
+import readline from 'readline'
 import P from "pino"
 import pretty from 'pino-pretty'
 import NodeCache from "node-cache"
@@ -34,13 +35,14 @@ import {
 import { Low } from 'lowdb';
 import store from './lib/store.js';
 import { JSONFile } from "lowdb/node"
-/* import {
-  mongoDB,
-  mongoDBV2
-} from './lib/mongoDB.js' */
+import cloudDBAdapter from './lib/cloudDBAdapter.js'
+import {
+    mongoDB,
+    mongoDBV2
+} from './lib/mongoDB.js'
 const {proto} = (await import('@adiwajshing/baileys')).default;
 const {
-	DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore
+	DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore, PHONENUMBER_MCC
 } = await import('@adiwajshing/baileys')
 
 const { CONNECTING } = ws
@@ -61,32 +63,46 @@ const __dirname = global.__dirname(import.meta.url)
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.prefix = new RegExp('^[' + (opts['prefix'] || '‎xzXZ/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']')
 
-global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`))
-
+global.db = new Low(
+  /https?:\/\//.test(opts['db'] || '') ?
+    new cloudDBAdapter(opts['db']) : /mongodb(\+srv)?:\/\//i.test(opts['db']) ?
+      (opts['mongodbv2'] ? new mongoDBV2(opts['db']) : new mongoDB(opts['db'])) :
+      new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`)
+)
 global.DATABASE = global.db // Backwards Compatibility
 global.loadDatabase = async function loadDatabase() {
-  if (global.db.READ) return new Promise((resolve) => setInterval(async function () {
-    if (!global.db.READ) {
-      clearInterval(this)
-      resolve(global.db.data == null ? await global.loadDatabase() : global.db.data)
+    if (db.READ) return new Promise((resolve) => setInterval(async function () {
+        if (!db.READ) {
+            clearInterval(this)
+            resolve(db.data == null ? global.loadDatabase() : db.data)
+        }
+    }, 1 * 1000))
+    if (db.data !== null) return
+    db.READ = true
+    await db.read().catch(console.error)
+    db.READ = null
+    db.data = {
+        users: {},
+        chats: {},
+        stats: {},
+        msgs: {},
+        sticker: {},
+        settings: {},
+        ...(db.data || {})
     }
-  }, 1 * 1000))
-  if (global.db.data !== null) return
-  global.db.READ = true
-  await global.db.read().catch(console.error)
-  global.db.READ = null
-  global.db.data = {
-    users: {},
-    chats: {},
-    stats: {},
-    msgs: {},
-    sticker: {},
-    settings: {},
-    ...(global.db.data || {})
-  }
-  global.db.chain = chain(global.db.data)
+    global.db.chain = chain(db.data)
 }
 loadDatabase()
+
+const usePairingCode = !process.argv.includes('--use-pairing-code')
+const useMobile = process.argv.includes('--mobile')
+
+var question = function(text) {
+            return new Promise(function(resolve) {
+                rl.question(text, resolve);
+            });
+        };
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
 global.authFile = `sessions`;
 
@@ -109,7 +125,7 @@ const logger = Pino({
 }).child({ class: 'baileys'})
 
 const connectionOptions = {
-  printQRInTerminal: true,
+  printQRInTerminal: !usePairingCode,
   patchMessageBeforeSending: (message) => {
     const requiresPatch = !!( message.buttonsMessage || message.templateMessage || message.listMessage );
     if (requiresPatch) {
@@ -141,6 +157,23 @@ conn.isInit = false
 
 conn.logger.info(`W A I T I N G\n`);
 
+if(usePairingCode && !conn.authState.creds.registered) {
+		if(useMobile) throw new Error('Cannot use pairing code with mobile api')
+		const { registration } = { registration: {} }
+		let phoneNumber = ''
+		do {
+			phoneNumber = await question(chalk.blueBright('Input a Valid number start with region code. Example : 91xxx:\n'))
+		} while (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v)))
+		rl.close()
+		phoneNumber = phoneNumber.replace(/\D/g,'')
+		console.log(chalk.bgWhite(chalk.blue('Generating code...')))
+		setTimeout(async () => {
+			let code = await conn.requestPairingCode(phoneNumber)
+			code = code?.match(/.{1,4}/g)?.join('-') || code
+			console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
+		}, 3000)
+	}
+	
 if (!opts['test']) {
     (await import('./server.js')).default(PORT)
     if (global.db) {
