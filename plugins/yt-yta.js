@@ -42,7 +42,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
 handler.help = ['yta <url>']
 handler.tags = ['downloader']
-handler.command = /^(yt(a(udio)?|mp3))$/i
+handler.command = /^(yt(a(udio)?|mp3)?|vfmp3)$/i
 
 export default handler
 
