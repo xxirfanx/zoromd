@@ -259,7 +259,7 @@ global.nomorown = '919911111111'
   
  ```bash
  𝐀𝐮𝐭𝐡𝐨𝐫 : lua ser ofc
- 𝐖𝐚 : +91 6235 050 956
+ 𝐖𝐚 : null
  𝐛𝐚𝐬𝐞 : Narutomo and BochilGaming and Rlxfly
  𝐌𝐲 𝐏𝐫𝐨𝐣𝐞𝐜𝐭 : 7 may 2023
  ```
